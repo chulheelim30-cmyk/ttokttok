@@ -43,10 +43,14 @@
     guard();
   });
 
-  function start() {
-    try { history.replaceState({ tt: 'root' }, ''); } catch (e) {}
-    guard();
+  // 안드로이드 크롬·삼성 인터넷은 '화면을 건드리기 전에 만든 기록'을 뒤로가기 때 건너뛰어요.
+  // 그래서 첫 터치(사용자 동작) 때 보호 기록을 만들어요.
+  var armed = false;
+  function arm() {
+    if (armed) return;
+    armed = true;
+    try { if (!history.state || history.state.tt !== 'guard') { history.replaceState({ tt: 'root' }, ''); guard(); } } catch (e) {}
+    ['pointerdown', 'touchstart', 'keydown', 'click'].forEach(function (t) { window.removeEventListener(t, arm, true); });
   }
-  if (document.readyState === 'complete') start();
-  else window.addEventListener('load', start);
+  ['pointerdown', 'touchstart', 'keydown', 'click'].forEach(function (t) { window.addEventListener(t, arm, true); });
 })();

@@ -14,9 +14,9 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-17fb2831.js"></script>
+<script type="module" src="./app-bf83fb9c.js"></script>
 <script src="./pwa.js" defer></script>
-<script src="./back.js" defer></script>
+<script src="./back.js?v=2" defer></script>
 <style>
 .pic-btn{display:block;width:100%;border:0;padding:0;margin-top:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 26px rgba(20,40,75,.16);font:inherit}
 .board-in{position:absolute;inset:0}
@@ -53,6 +53,12 @@
 .pv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .pv img.pv-blur{filter:blur(14px) saturate(.8);transform:scale(1.2)}
 .vbadge{width:15px;height:15px;vertical-align:-2px;margin-left:3px;display:inline-block}
+.gold-chip{position:absolute;right:10px;top:10px;background:rgba(255,211,77,.95);color:#14284b;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800;pointer-events:none}
+.grid .open.gold{opacity:1;transform:none;background:transparent;box-shadow:inset 0 0 0 3px #ffd34d;display:flex;align-items:flex-start;justify-content:flex-end}
+.grid .open.gold.flash{animation:none}
+.gstar{font-style:normal;color:#ffd34d;font-size:13px;line-height:1;margin:3px 4px 0 0;text-shadow:0 1px 2px rgba(20,40,75,.6)}
+.gold-burst{width:84px;height:84px;margin:6px auto 0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#e0a92e);color:#fff;font-size:44px;line-height:84px;box-shadow:0 0 0 10px rgba(255,211,77,.25),0 10px 26px rgba(224,169,46,.45)}
+.gold-h{font-size:24px;font-weight:900;color:var(--navy);margin-top:14px}
 </style>
 </head>
 <body>
@@ -64,7 +70,7 @@
 <div class="card">
 <div class="row"><div><div class="t1" id="picTitle">11월의 숨은 그림</div><div class="t2" id="picSub">협업 작가 · 「은행잎 지는 저녁」</div></div><div class="sp"></div><div class="t1" style="color:var(--blue)" id="picCount">0/30</div></div>
 <div class="bar"><i id="picBar" style="width:0"></i></div>
-<button class="board pic-btn" id="knockBtn" aria-label="그림을 두 번 두드려 노크"><div class="board-in" id="board"></div><span class="pic-chip" id="picChip">0/30칸</span><span id="knockDrop" hidden></span><b id="knockLabel" hidden>또옥, 또옥</b></button>
+<button class="board pic-btn" id="knockBtn" aria-label="그림을 두 번 두드려 노크"><div class="board-in" id="board"></div><span class="pic-chip" id="picChip">0/30칸</span><span class="gold-chip" id="goldChip">황금 칸 3개 숨어 있어요</span><span id="knockDrop" hidden></span><b id="knockLabel" hidden>또옥, 또옥</b></button>
 </div>
 <div class="knockwrap">
 <div class="knock-head" id="knockHead">그림을 두 번 두드려요</div>
@@ -154,6 +160,17 @@
 <input class="inp" id="roomNameInput" maxlength="14" autocomplete="off" placeholder="예: 우리 가족, 대학 동기">
 <button class="btn bp" style="margin-top:12px" onclick="submitCreate()">만들기</button>
 <div class="t3" style="text-align:center;margin-top:8px" id="createHint"></div>
+</div></div></div>
+
+<div class="sheet" id="goldSheet"><div class="dim" onclick="closeGold()"></div><div class="pan"><div class="grab"></div>
+<div style="padding:8px 18px 0;text-align:center">
+<div class="gold-burst" aria-hidden="true">★</div>
+<div class="gold-h">황금 칸 당첨!</div>
+<div class="t2" style="margin-top:6px;line-height:1.6">내 노크로 숨은 황금 칸을 열었어요<br><b>커피 기프티콘</b>을 보내 드려요</div>
+<input class="inp" id="goldPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="기프티콘 받을 휴대폰 번호" style="margin-top:16px;text-align:center">
+<button class="btn plus-go" style="margin-top:10px" onclick="saveGold()">기프티콘 받기</button>
+<div class="t3" style="margin-top:8px">번호는 기프티콘을 보내는 데만 쓰고, 보낸 뒤 지워요</div>
+<button class="btn bw" style="margin-top:10px" onclick="closeGold()">나중에 받을게요</button>
 </div></div></div>
 
 <div class="sheet" id="picSheet"><div class="dim" onclick="closePic()"></div><div class="pan"><div class="grab"></div>
