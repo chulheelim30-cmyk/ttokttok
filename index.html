@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-bf83fb9c.js"></script>
+<script type="module" src="./app-67b9b0dd.js"></script>
 <script src="./pwa.js" defer></script>
 <script src="./back.js?v=2" defer></script>
 <style>
@@ -191,7 +191,7 @@
 <div class="plus-hero"><div class="plus-badge">또옥또옥 플러스</div><div class="plus-h">부모님 안부,<br>더 확실하게</div><div class="plus-s">노크가 끊기면 놓치지 않게, 가족이 함께 지켜봐요</div></div>
 <div class="sec" style="margin-top:16px">지금 바로 쓸 수 있어요</div>
 <div class="plus-f"><b class="ok">✓</b><div><div class="t1">하루 3번 노크</div><div class="t3">하루 1번이 3번으로 · 노크할 때마다 우리 그림이 한 칸씩 더 열려요</div></div></div>
-<div class="plus-f"><b class="ok">✓</b><div><div class="t1">노크방 무제한</div><div class="t3">가족방, 친구방, 동네방… 2개 제한 없이</div></div></div>
+<div class="plus-f"><b class="ok">✓</b><div><div class="t1">노크방 5개까지</div><div class="t3">가족방, 친구방, 동네방… 무료 2개에서 5개로</div></div></div>
 <div class="plus-f"><b class="ok">✓</b><div><div class="t1">플러스 노크 소리 전부</div><div class="t3">내 노크가 가까운 사람 폰에서도 이 소리로 울려요</div></div></div>
 <div class="sec" style="margin-top:14px">곧 열려요</div>
 <div class="plus-f"><b>◷</b><div><div class="t1">단계별 안심 알림</div><div class="t3">노크가 끊기면 앱 알림 → 문자 → 전화 순으로 보호자에게</div></div></div>
@@ -202,10 +202,10 @@
 </div></div></div>
 
 <div class="sheet" id="limitSheet"><div class="dim" onclick="closeLimit()"></div><div class="pan"><div class="grab"></div>
-<div class="top"><div class="logo" style="font-size:18px">노크방은 2개까지 무료예요</div></div>
+<div class="top"><div class="logo" style="font-size:18px" id="limitTitle">노크방은 2개까지 무료예요</div></div>
 <div style="padding:6px 18px 0">
-<div class="t2" style="line-height:1.7">3번째 노크방부터는 <b>또옥또옥 플러스</b>에서 만들 수 있어요.<br>다른 사람이 만든 노크방에 들어가는 건 개수와 상관없이 무료예요.</div>
-<button class="btn bp" style="margin-top:14px" onclick="openPlus()">플러스 알아보기 (베타 기간 무료)</button>
+<div class="t2" style="line-height:1.7" id="limitBody">3번째 노크방부터는 <b>또옥또옥 플러스</b>에서 만들 수 있어요 (최대 5개).<br>다른 사람이 만든 노크방에 들어가는 건 개수와 상관없이 무료예요.</div>
+<button class="btn bp" style="margin-top:14px" onclick="openPlus()" id="limitPlusBtn">플러스 알아보기 (베타 기간 무료)</button>
 <button class="btn bw" style="margin-top:8px" onclick="closeLimit();openRooms()">내 노크방 정리하기</button>
 </div></div></div>
 
