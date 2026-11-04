@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-f1d14998.js"></script>
+<script type="module" src="./app-f3c8d675.js"></script>
 <script src="./pwa.js" defer></script>
 <style>
 .pic-btn{display:block;width:100%;border:0;padding:0;margin-top:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 26px rgba(20,40,75,.16);font:inherit}
@@ -33,6 +33,20 @@
 .kdots i.me.on{background:var(--gold)}
 .th.blur img{filter:blur(9px) saturate(.8);transform:scale(1.2)}
 .th.blur .lock{background:rgba(223,231,241,.45);color:#14284b}
+.plus-card{display:block;width:calc(100% - 28px);border:0;background:linear-gradient(135deg,#14284b,#1f5fa8);font:inherit;cursor:pointer}
+.plus-hero{background:linear-gradient(135deg,#14284b,#1f5fa8);border-radius:20px;padding:20px 18px;color:#fff}
+.plus-badge{display:inline-block;background:#ffd34d;color:#14284b;font-size:12px;font-weight:900;border-radius:999px;padding:4px 10px}
+.plus-h{font-size:24px;font-weight:900;line-height:1.3;margin-top:10px}
+.plus-s{font-size:13px;color:#dbe6f4;margin-top:6px}
+.plus-f{display:flex;gap:12px;align-items:flex-start;background:#fff;border-radius:14px;padding:12px 14px;margin-top:8px}
+.plus-f>b{width:24px;height:24px;flex:none;border-radius:50%;background:#e7f0fb;color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:13px}
+.plus-f>b.ok{background:#e4f5ec;color:var(--ok)}
+.plus-f .t1{font-size:14px}
+.plus-price{display:flex;flex-direction:column;align-items:center;gap:2px;margin:16px 0 10px;text-align:center}
+.plus-price b{font-size:20px;color:var(--navy)}
+.plus-price span{font-size:12px;color:var(--mut)}
+.plus-go{background:#ffd34d;color:#14284b}
+.plus-go:disabled{background:#e3e9f2;color:var(--mut)}
 </style>
 </head>
 <body>
@@ -77,6 +91,7 @@
 <!-- 설정 -->
 <section class="view hide" id="v-set">
 <div class="top"><div class="logo" style="font-size:18px">설정</div></div>
+<button class="card plus-card" onclick="openPlus()"><div class="row"><div style="text-align:left"><div class="t1" style="font-size:15px;color:#fff">또옥또옥 플러스</div><div class="t3" id="plusSetTxt" style="color:#dbe6f4">부모님 안부를 더 확실하게 · 7일 무료 체험</div></div><div class="sp"></div><span class="mini" style="background:#ffd34d;color:#14284b">알아보기</span></div></button>
 <div class="card">
 <div class="set" style="display:block"><div class="row"><div class="t1" style="font-size:14px">안부 기준 시간</div><div class="sp"></div><div class="t1" id="thVal">48시간</div></div>
 <input type="range" min="12" max="72" step="6" value="48" id="thRange"><div class="row t3"><span>12시간</span><div class="sp"></div><span>72시간</span></div>
@@ -135,11 +150,25 @@
 <div class="t3" style="text-align:center;margin-top:8px" id="createHint"></div>
 </div></div></div>
 
+<div class="sheet" id="plusSheet"><div class="dim" onclick="closePlus()"></div><div class="pan"><div class="grab"></div>
+<div style="padding:8px 18px 0">
+<div class="plus-hero"><div class="plus-badge">또옥또옥 플러스</div><div class="plus-h">부모님 안부,<br>더 확실하게</div><div class="plus-s">노크가 끊기면 놓치지 않게, 가족이 함께 지켜봐요</div></div>
+<div class="sec" style="margin-top:16px">지금 바로 쓸 수 있어요</div>
+<div class="plus-f"><b class="ok">✓</b><div><div class="t1">노크방 무제한</div><div class="t3">가족방, 친구방, 동네방… 2개 제한 없이</div></div></div>
+<div class="plus-f"><b class="ok">✓</b><div><div class="t1">플러스 노크 소리 전부</div><div class="t3">내 노크가 가까운 사람 폰에서도 이 소리로 울려요</div></div></div>
+<div class="sec" style="margin-top:14px">곧 열려요</div>
+<div class="plus-f"><b>◷</b><div><div class="t1">단계별 안심 알림</div><div class="t3">노크가 끊기면 앱 알림 → 문자 → 전화 순으로 보호자에게</div></div></div>
+<div class="plus-f"><b>◷</b><div><div class="t1">보호자 여러 명 · 월간 안부 리포트</div><div class="t3">한 달 노크 기록을 가족 모두에게</div></div></div>
+<div class="plus-price"><b>월 3,900원</b><span>정식 출시 예정 가격 · 베타 기간에는 결제를 받지 않아요</span></div>
+<button class="btn plus-go" id="plusStartBtn" onclick="startPlusTrial()">7일 무료 체험 시작</button>
+<div class="t3" style="text-align:center;margin:8px 0 4px">체험이 끝나면 자동으로 무료로 돌아가요 · 자동 결제 없음</div>
+</div></div></div>
+
 <div class="sheet" id="limitSheet"><div class="dim" onclick="closeLimit()"></div><div class="pan"><div class="grab"></div>
 <div class="top"><div class="logo" style="font-size:18px">노크방은 2개까지 무료예요</div></div>
 <div style="padding:6px 18px 0">
 <div class="t2" style="line-height:1.7">3번째 노크방부터는 <b>또옥또옥 플러스</b>에서 만들 수 있어요.<br>다른 사람이 만든 노크방에 들어가는 건 개수와 상관없이 무료예요.</div>
-<button class="btn bp" style="margin-top:14px" onclick="openPlus()">플러스 알아보기 (준비 중)</button>
+<button class="btn bp" style="margin-top:14px" onclick="openPlus()">플러스 7일 무료 체험 알아보기</button>
 <button class="btn bw" style="margin-top:8px" onclick="closeLimit();openRooms()">내 노크방 정리하기</button>
 </div></div></div>
 
