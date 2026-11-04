@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#14284b">
+<title>또옥또옥</title>
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="또옥또옥">
+<meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
+<link rel="stylesheet" href="./app-e2bffffe.css">
+<script type="module" src="./app-BRPDVLaW.js"></script>
+<script src="./pwa.js" defer></script>
+</head>
+<body>
+<div id="app">
+
+<!-- 노크 -->
+<section class="view" id="v-knock">
+  <div class="top"><div class="logo"><span id="logoDrop"></span>또옥또옥</div><button class="chip" onclick="go('room')"><span id="roomName">우리 가족 노크방</span> ▾</button></div>
+  <div class="card">
+    <div class="row"><div><div class="t1" id="picTitle">11월의 숨은 그림</div><div class="t2">협업 작가 · 「우리 집 가는 길」</div></div><div class="sp"></div><div class="t1" style="color:var(--blue)" id="picCount">0/30</div></div>
+    <div class="bar"><i id="picBar" style="width:0"></i></div>
+    <div class="board" id="board"></div>
+  </div>
+  <div class="knockwrap">
+    <button class="knock" id="knockBtn" aria-label="두 번 두드리기"><span id="knockDrop"></span><b id="knockLabel">또옥, 또옥</b></button>
+    <div class="cap" id="knockCap">그림을 <b>두 번</b> 두드리면 노크방에 오늘의 안부가 가요</div>
+    <div class="chips"><span class="chip" id="streakChip">0일 연속 노크</span><span class="chip g" id="todayChip">오늘 0/1명 노크</span><button class="chip" style="background:#14284b;color:#fff" onclick="openSound()" id="soundChip">♪ 물방울</button></div>
+  </div>
+  <div class="small">그림은 예시이며 실제는 협업 작가 원화로 바뀌어요</div>
+</section>
+
+<!-- 노크방 -->
+<section class="view hide" id="v-room">
+  <div class="top"><div class="logo" style="font-size:18px" id="roomTitle">우리 가족 노크방</div><span class="chip" id="roomCnt">1명</span></div>
+  <div class="card"><div class="t3" id="todayLabel">오늘</div><div id="members"></div></div>
+  <div class="card"><div class="row"><div class="t1">우리 그림</div><div class="sp"></div><div class="t3">모두 노크하면 보너스 칸</div></div>
+    <div class="bar"><i id="groupBar" style="width:0;background:var(--gold)"></i></div><div class="t3" style="margin-top:6px" id="groupTxt"></div></div>
+  <div class="card" style="text-align:center"><div class="t2">가까운 사람 초대 코드</div><div class="code" id="inviteCode">------</div>
+    <button class="btn bs" onclick="shareInvite()">초대 메시지 보내기</button>
+    <div class="t3" style="margin-top:8px">공개 피드·팔로워 없음 · 최대 12명</div></div>
+</section>
+
+<!-- 그림첩 -->
+<section class="view hide" id="v-album">
+  <div class="top"><div class="logo" style="font-size:18px">내 그림첩</div><span class="chip" id="albumCnt">0/12장</span></div>
+  <div class="card"><div class="albumgrid" id="albumGrid"></div></div>
+  <div class="card"><div class="row"><div class="av" style="background:var(--gold)">작가</div><div><div class="t1">이번 달 작가</div><div class="t3">협업 작가의 그림이 매달 새로 열려요</div></div></div></div>
+</section>
+
+<!-- 설정 -->
+<section class="view hide" id="v-set">
+  <div class="top"><div class="logo" style="font-size:18px">설정</div></div>
+  <div class="card">
+    <div class="set" style="display:block"><div class="row"><div class="t1" style="font-size:14px">안부 기준 시간</div><div class="sp"></div><div class="t1" id="thVal">48시간</div></div>
+      <input type="range" min="12" max="72" step="6" value="48" id="thRange"><div class="row t3"><span>12시간</span><div class="sp"></div><span>72시간</span></div>
+      <div class="t3" style="margin-top:4px">이 시간 동안 노크가 없으면 본인에게 먼저 묻고, 6시간 더 답이 없으면 노크방에 알려요</div></div>
+    <div class="set"><div><div class="t1" style="font-size:14px">노크 소리</div><div class="t3" id="soundSetTxt">물방울 · 가까운 사람 휴대폰에서도 이 소리로 울려요</div></div><div class="sp"></div><button class="mini bs" onclick="openSound()">고르기</button></div>
+    <div class="set"><div><div class="t1" style="font-size:14px">잠시 멈춤</div><div class="t3">여행·입원 때 알림을 쉬어요</div></div><div class="sp"></div><button class="sw" id="pauseSw" onclick="togglePause()"></button></div>
+    <div class="set"><div><div class="t1" style="font-size:14px">내 이름</div><div class="t3" id="myNameTxt"></div></div><div class="sp"></div><button class="mini bs" onclick="openRename()">바꾸기</button></div>
+  </div>
+  <!-- 개발용 패널: 검수 신청 전에 지워요 (src/main.js의 SHOW_DEMO 값을 false로) -->
+  <div class="card demo" id="demoPanel">
+    <div class="t1">체험용 시간 이동 (개발용)</div><div class="t3" style="margin:4px 0 10px">시간이 지나면 일어나는 일을 바로 확인해 볼 수 있어요</div>
+    <button class="btn bw" onclick="nextDay()">다음 날로 넘어가기 (+1일)</button>
+    <button class="btn bw" style="margin-top:8px" onclick="simulateMissed()">48시간 노크 없음 → “괜찮아요?” 체험</button>
+    <button class="btn bw" style="margin-top:8px" onclick="openFull('alert')">가까운 사람이 받는 알림 보기</button>
+    <button class="btn bw" style="margin-top:8px" onclick="fillPicture()">그림 완성 직전까지 채우기</button>
+    <button class="btn" style="margin-top:8px;color:#c0392b" id="resetBtn" onclick="resetAll()">처음부터 다시 (데이터 초기화)</button>
+  </div>
+  <div class="small">응급 구조 서비스가 아닙니다 · 위치·건강 정보는 받지 않아요<br>또옥또옥 v0.2</div>
+</section>
+
+<nav class="nav">
+  <button data-v="knock" class="on" onclick="go('knock')"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 4 11.5 4 16.5a8 8 0 0 0 16 0C20 11.5 12 2 12 2z" fill="currentColor"/></svg>노크</button>
+  <button data-v="room" onclick="go('room')"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="9" r="3.2"/><circle cx="16" cy="9" r="3.2"/><path d="M2 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5z"/><path d="M10 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5z" opacity=".6"/></svg>노크방</button>
+  <button data-v="album" onclick="go('album')"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2" opacity=".6"/><rect x="3" y="13" width="8" height="8" rx="2" opacity=".6"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>그림첩</button>
+  <button data-v="set" onclick="go('set')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm9 3.5l-2.2-.6a7 7 0 0 0-.8-1.9l1.1-2-1.6-1.6-2 1.1a7 7 0 0 0-1.9-.8L13 3h-2l-.6 2.2a7 7 0 0 0-1.9.8l-2-1.1-1.6 1.6 1.1 2a7 7 0 0 0-.8 1.9L3 11v2l2.2.6c.2.7.4 1.3.8 1.9l-1.1 2 1.6 1.6 2-1.1c.6.4 1.2.6 1.9.8L11 21h2l.6-2.2c.7-.2 1.3-.4 1.9-.8l2 1.1 1.6-1.6-1.1-2c.4-.6.6-1.2.8-1.9L21 13z"/></svg>설정</button>
+</nav>
+
+<!-- 노크 소리 고르기 -->
+<div class="sheet" id="soundSheet"><div class="dim" onclick="closeSound()"></div><div class="pan"><div class="grab"></div>
+  <div class="top"><div class="logo" style="font-size:18px">노크 소리 고르기</div></div>
+  <div class="small" style="text-align:left;margin:0 18px 6px">두 번 두드릴 때마다 한 번씩 울려요. 내 노크는 <b>가까운 사람 휴대폰에서도 이 소리로</b> 들려요.</div>
+  <div id="soundList"></div>
+  <div class="small">▶ 눌러서 미리 들어 보세요 · 소리가 안 나면 무음 모드를 확인해 주세요</div>
+</div></div>
+
+<!-- 이름 바꾸기 -->
+<div class="sheet" id="codeSheet"><div class="dim" onclick="closeCode()"></div><div class="pan"><div class="grab"></div>
+  <div class="top"><div class="logo" style="font-size:18px">초대 코드 넣기</div></div>
+  <div style="padding:6px 18px 0">
+    <div class="t3" style="margin-bottom:8px">가까운 사람에게 받은 6자리 숫자를 넣어 주세요</div>
+    <input id="codeInput" inputmode="numeric" maxlength="7" autocomplete="off" placeholder="예: 482913" style="width:100%;font-size:22px;letter-spacing:6px;text-align:center;padding:15px 16px;border-radius:14px;border:1px solid var(--line);font-family:inherit">
+    <button class="btn bp" style="margin-top:12px" onclick="submitCode()">노크방 들어가기</button>
+  </div>
+</div></div>
+
+<div class="sheet" id="nameSheet"><div class="dim" onclick="closeRename()"></div><div class="pan"><div class="grab"></div>
+  <div class="top"><div class="logo" style="font-size:18px">노크방에서 불릴 이름</div></div>
+  <div style="padding:6px 18px 0">
+    <input id="renameInput" maxlength="8" autocomplete="off" style="width:100%;font-size:17px;padding:15px 16px;border-radius:14px;border:1px solid var(--line);font-family:inherit">
+    <button class="btn bp" style="margin-top:12px" onclick="saveRename()">저장하기</button>
+  </div>
+</div></div>
+
+<!-- 전체 화면: 괜찮아요? -->
+<div class="full" id="f-check" style="background:var(--bg)">
+  <div style="text-align:center;padding:30px 22px 0"><div style="margin:20px auto 14px;width:110px;height:110px;border-radius:50%;background:#fff1d6;display:flex;align-items:center;justify-content:center" id="checkDrop"></div>
+    <div style="font-size:25px;font-weight:800;color:var(--navy)" id="checkTitle">괜찮아요?</div>
+    <div class="t2" style="font-size:15px;margin-top:10px;line-height:1.7" id="checkTxt">48시간 동안 노크가 없었어요.<br>괜찮다면 한 번만 두드려 주세요.</div></div>
+  <div style="padding:26px 22px 0"><button class="btn bp" onclick="checkOk()">괜찮아요, 지금 노크할게요</button>
+    <button class="btn bs" style="margin-top:10px" onclick="checkPause()">잠시 멈춤 (여행·입원)</button>
+    <button class="btn bw" style="margin-top:10px" onclick="checkIgnore()">답하지 않기 → 6시간 뒤 체험</button></div>
+  <div class="card" style="margin-top:22px"><div class="t1">다음 단계 안내</div><div class="t2" style="margin-top:8px;line-height:1.8">① 지금: 본인에게 먼저 물어요<br>② 6시간 더 답이 없으면: 노크방에 알려요</div>
+    <div class="t3" style="margin-top:8px">응급 구조 서비스가 아닙니다</div></div>
+</div>
+
+<!-- 전체 화면: 받는 쪽 알림 -->
+<div class="full lockscr" id="f-alert">
+  <div style="color:#fff;font-size:52px;font-weight:300;text-align:center;margin-top:18px" id="lockTime">9:41</div><div style="color:#e8eef6;font-size:14px;text-align:center;margin-bottom:18px">가까운 사람의 휴대폰 화면 (예시)</div>
+  <div class="ntf"><div class="row t3"><b style="color:var(--navy)">또옥또옥</b><div class="sp"></div><span>지금</span></div>
+    <div class="t1" style="margin-top:5px" id="alertTitle">민지님의 노크가 54시간째 없어요</div><div class="t2">본인 확인에도 답이 없어 노크방에 알려요. 연락해 보세요.</div>
+    <div class="row" style="gap:8px;margin-top:10px"><button class="btn bp" style="padding:10px" onclick="toast('전화하기 (예시)')">전화하기</button><button class="btn bs" style="padding:10px" onclick="toast('안부 확인됨으로 기록했어요 (예시)')">안부 확인했어요</button></div></div>
+  <div style="padding:10px 14px"><button class="btn" style="background:rgba(255,255,255,.2);color:#fff" onclick="closeFull()">돌아가기</button></div>
+</div>
+
+<!-- 온보딩 -->
+<div class="full onb" id="f-onb">
+  <div style="padding:30px 26px 0">
+    <div id="onbDrop" style="margin-top:30px"></div>
+    <div style="font-size:40px;font-weight:800;margin-top:14px">또옥또옥</div>
+    <div style="font-size:19px;font-weight:700;line-height:1.5;margin-top:8px">하루 1초 노크로<br>가까운 사람과 ‘오늘’을 주고받아요</div>
+    <div style="font-size:14px;line-height:1.8;color:#dbe6f4;margin-top:16px">· 하루 한 번, 그림을 두 번 두드려요<br>· 노크할 때마다 작가 그림이 한 칸씩 열려요<br>· 노크가 끊기면 “괜찮아요?”가 먼저 가요</div>
+    <div style="margin-top:28px;font-size:14px;font-weight:700">노크방에서 불릴 이름</div>
+    <input id="nameInput" maxlength="8" placeholder="예: 민지" autocomplete="off">
+    <button class="btn" style="background:#ffd34d;color:var(--navy);margin-top:14px" onclick="startApp()">우리 가족 노크방 만들기</button>
+    <button class="btn" style="background:rgba(255,255,255,.14);color:#fff;margin-top:10px" onclick="startApp('code')">초대 코드로 들어가기</button>
+    <div class="t3" style="color:#b9cbe3;margin-top:16px;text-align:center">지금은 체험 버전이에요. 입력한 내용은 이 휴대폰에만 저장돼요.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="confetti" id="confetti"></div>
+</div>
+</body>
+</html>
