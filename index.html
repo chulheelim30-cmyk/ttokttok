@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-7bb9089d.js"></script>
+<script type="module" src="./app-74658c3b.js"></script>
 <script src="./pwa.js" defer></script>
 <script src="./back.js?v=2" defer></script>
 <script src="./push.js?v=1" defer></script>
@@ -197,7 +197,7 @@ html,body{background:#ece6da;color:var(--ink)}
 <section class="view hide" id="v-set">
 <div class="top"><div class="logo" style="font-size:18px">설정</div></div>
 <div class="card" id="opCard" style="display:none"><div class="row"><div class="t1" style="font-size:14px">운영자 · 화면 모드</div><div class="sp"></div><span class="chip y">나만 보여요</span></div><div class="t3" id="opModeTxt" style="margin-top:4px"></div><div class="row" style="gap:8px;margin-top:10px"><button class="btn bs" id="opBeta" style="flex:1;padding:12px" onclick="setViewMode(0)">현재 버전</button><button class="btn bs" id="opRel" style="flex:1;padding:12px" onclick="setViewMode(1)">토스 버전</button></div><button class="btn bw" style="margin-top:8px;padding:12px" onclick="opGallery()">모든 그림 미리보기</button></div>
-<button class="card plus-card" onclick="openPlus()"><div class="row"><div style="text-align:left"><div class="t1" style="font-size:15px;color:#fff">또옥또옥 플러스</div><div class="t3" id="plusSetTxt" style="color:#dbe6f4">따로 사는 가족 안부를 더 확실하게 · 베타 기간 무료</div></div><div class="sp"></div><span class="mini" style="background:#ffd34d;color:#14284b">알아보기</span></div></button>
+<button class="card plus-card" onclick="openPlus()"><div class="row"><div style="text-align:left"><div class="t1" style="font-size:15px;color:#fff">또옥또옥 플러스</div><div class="t3" id="plusSetTxt" style="color:#dbe6f4">멀리 있는 가족·친구 안부를 더 확실하게 · 베타 기간 무료</div></div><div class="sp"></div><span class="mini" style="background:#ffd34d;color:#14284b">알아보기</span></div></button>
 <div class="card">
 <div class="set" style="display:block"><div class="row"><div class="t1" style="font-size:14px">안부 기준 시간</div><div class="sp"></div><div class="t1" id="thVal">48시간</div></div>
 <input type="range" min="12" max="72" step="6" value="48" id="thRange"><div class="row t3"><span>12시간</span><div class="sp"></div><span>72시간</span></div>
@@ -264,10 +264,10 @@ html,body{background:#ece6da;color:var(--ink)}
 
 <div class="about-sec">이렇게 써요</div>
 <ol class="about-steps">
-<li><b>노크방을 만들고 초대해요</b><span>가족, 친구, 혼자 사는 동기까지. 초대 링크나 6자리 코드로 들어와요.</span></li>
+<li><b>노크방을 만들고 초대해요</b><span>가족, 친구, 크루, 혼자 사는 동기까지. 초대 링크나 6자리 코드로 들어와요.</span></li>
 <li><b>하루 한 번, 그림을 두 번 톡톡</b><span>내 노크가 노크방에 “오늘도 잘 있어요”로 전해지고, 우리 그림이 한 칸씩 열려요.</span></li>
 <li><b>함께 그림을 채워요</b><span>모두의 노크가 모여 숨은 그림이 드러나요. 다 채우면 그림첩에 담겨요.</span></li>
-<li><b>소식이 없으면 알려 줘요</b><span>정해 둔 시간 동안 노크도 없고 앱도 안 열면 먼저 본인에게 “괜찮아요?”를 보내요. 3시간 뒤에도 소식이 없으면 노크방 사람들에게 알려요. 밤 10시~아침 8시에는 가족 알림을 아침으로 미뤄요. 여행이나 입원 때는 ‘잠시 멈춤’을 켜 두세요.</span></li>
+<li><b>소식이 없으면 알려 줘요</b><span>정해 둔 시간 동안 노크도 없고 앱도 안 열면 먼저 본인에게 “괜찮아요?”를 보내요. 3시간 뒤에도 소식이 없으면 노크방 사람들에게 알려요. 밤 10시~아침 8시에는 노크방 알림을 아침으로 미뤄요. 여행이나 입원 때는 ‘잠시 멈춤’을 켜 두세요.</span></li>
 <li><b>오늘 컨디션도 한 번에</b><span>노크한 뒤 좋음·그냥·별로를 고를 수 있어요. ‘별로’면 노크방 사람들에게 “전화 한 통 어때요?”가 가요. 고르지 않아도 괜찮아요.</span></li>
 </ol>
 
@@ -318,14 +318,14 @@ html,body{background:#ece6da;color:var(--ink)}
 
 <div class="sheet" id="plusSheet"><div class="dim" onclick="closePlus()"></div><div class="pan"><div class="grab"></div>
 <div style="padding:8px 18px 0">
-<div class="plus-hero"><div class="plus-badge">또옥또옥 플러스</div><div class="plus-h">따로 사는 가족 안부,<br>더 확실하게</div><div class="plus-s">노크가 끊기면 놓치지 않게, 가족이 함께 지켜봐요</div></div>
+<div class="plus-hero"><div class="plus-badge">또옥또옥 플러스</div><div class="plus-h">멀리 있는 가까운 사람 안부,<br>더 확실하게</div><div class="plus-s">노크가 끊기면 놓치지 않게, 노크방이 함께 지켜봐요</div></div>
 <div class="sec" style="margin-top:16px">지금 바로 쓸 수 있어요</div>
 <div class="plus-f"><b class="ok">✓</b><div><div class="t1">하루 3번 노크</div><div class="t3">하루 1번이 3번으로 · 노크할 때마다 우리 그림이 한 칸씩 더 열려요</div></div></div>
 <div class="plus-f"><b class="ok">✓</b><div><div class="t1">노크방 5개까지</div><div class="t3">가족방, 친구방, 동네방… 무료 2개에서 5개로</div></div></div>
 <div class="plus-f"><b class="ok">✓</b><div><div class="t1">플러스 노크 소리 전부</div><div class="t3">내 노크가 가까운 사람 폰에서도 이 소리로 울려요</div></div></div>
 <div class="sec beta-only" style="margin-top:14px">곧 열려요</div>
 <div class="plus-f beta-only"><b>◷</b><div><div class="t1">문자·전화 안심 알림</div><div class="t3">앱 알림을 못 봐도, 노크가 계속 없으면 문자 → 전화 순으로 보호자에게</div></div></div>
-<div class="plus-f beta-only"><b>◷</b><div><div class="t1">보호자 여러 명 · 월간 안부 리포트</div><div class="t3">한 달 노크 기록을 가족 모두에게</div></div></div>
+<div class="plus-f beta-only"><b>◷</b><div><div class="t1">보호자 여러 명 · 월간 안부 리포트</div><div class="t3">한 달 노크 기록을 노크방 모두에게</div></div></div>
 <div class="plus-price"><b class="beta-only">월 2,900원</b><span>베타 서비스 기간에는 무료예요</span></div>
 <button class="btn plus-go" id="plusStartBtn" onclick="startPlusTrial()">베타 기간 무료로 시작하기</button>
 <div class="t3" style="text-align:center;margin:8px 0 4px">정식 출시 전에 미리 알려 드려요 · 자동 결제 없음</div>
@@ -413,8 +413,8 @@ html,body{background:#ece6da;color:var(--ink)}
 <div style="padding:30px 26px 0">
 <div id="onbDrop" style="margin-top:30px"></div>
 <div style="font-size:40px;font-weight:800;margin-top:14px">또옥또옥</div>
-<div style="font-size:19px;font-weight:700;line-height:1.5;margin-top:8px">하루 1초 노크로 ‘나 괜찮아’<br>소식이 없으면 가족에게 알려 줘요</div>
-<div style="font-size:14px;line-height:1.8;color:#dbe6f4;margin-top:16px">· 하루 한 번, 그림을 두 번 톡톡 · 오늘 컨디션도 한 번에<br>· 소식이 없으면 본인에게 먼저, 그다음 가족에게 알려요<br>· 전화 받을 필요도, 장비 설치도 없어요<br>· 노크가 모이면 우리 그림이 한 칸씩 열려요</div>
+<div style="font-size:19px;font-weight:700;line-height:1.5;margin-top:8px">하루 1초 노크로 ‘나 괜찮아’<br>소식이 없으면 가까운 사람에게 알려 줘요</div>
+<div style="font-size:14px;line-height:1.8;color:#dbe6f4;margin-top:16px">· 하루 한 번, 그림을 두 번 톡톡 · 오늘 컨디션도 한 번에<br>· 소식이 없으면 본인에게 먼저, 그다음 노크방 사람들에게 알려요<br>· 전화 받을 필요도, 장비 설치도 없어요<br>· 노크가 모이면 우리 그림이 한 칸씩 열려요</div>
 <div id="onbJoin" style="display:none;margin-top:22px;background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px"><div style="font-size:12.5px;color:#dbe6f4">초대받은 노크방</div><div style="font-size:18px;font-weight:800;margin-top:2px" id="onbJoinName"></div><div style="font-size:12.5px;color:#b9cbe3;margin-top:2px" id="onbJoinSub"></div>
 <div id="onbIos" style="display:none;font-size:12.5px;color:#ffd34d;margin-top:8px;line-height:1.6">아이폰은 먼저 사파리 공유 버튼 → <b>홈 화면에 추가</b>를 한 뒤, 홈 화면 앱에서 초대 코드를 넣어 주세요. 사파리와 홈 화면 앱은 기록이 따로예요.</div></div>
 <div style="margin-top:24px;font-size:14px;font-weight:700">노크방에서 불릴 이름</div>
