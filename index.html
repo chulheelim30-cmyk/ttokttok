@@ -14,9 +14,10 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-78757861.js"></script>
+<script type="module" src="./app-0d8cd1f5.js"></script>
 <script src="./pwa.js" defer></script>
 <script src="./back.js?v=2" defer></script>
+<script src="./push.js?v=1" defer></script>
 <style>
 .pic-btn{display:block;width:100%;border:0;padding:0;margin-top:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 26px rgba(20,40,75,.16);font:inherit}
 .board-in{position:absolute;inset:0}
@@ -199,7 +200,8 @@ html,body{background:#ece6da;color:var(--ink)}
 <div class="card">
 <div class="set" style="display:block"><div class="row"><div class="t1" style="font-size:14px">안부 기준 시간</div><div class="sp"></div><div class="t1" id="thVal">48시간</div></div>
 <input type="range" min="12" max="72" step="6" value="48" id="thRange"><div class="row t3"><span>12시간</span><div class="sp"></div><span>72시간</span></div>
-<div class="t3" style="margin-top:4px">이 시간 동안 노크가 없으면 노크방 사람들 화면에 ‘○시간째 노크 없음’으로 보여요. 휴대폰 알림은 아직 준비 중이에요</div></div>
+<div class="t3" style="margin-top:4px">이 시간 동안 노크가 없으면 노크방 사람들 화면에 ‘○시간째 노크 없음’으로 보이고, 알림을 켠 사람에게는 휴대폰 알림도 가요</div></div>
+<div class="set" style="display:block"><div class="row"><div><div class="t1" style="font-size:14px">휴대폰 알림</div><div class="t3" id="pushTxt">확인 중…</div></div><div class="sp"></div><button class="mini" id="pushBtn" style="display:none">켜기</button></div><button class="btn bw" id="pushTest" style="display:none;margin-top:8px;padding:10px" onclick="ttPushTest()">테스트 알림 보내기</button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">노크 소리</div><div class="t3" id="soundSetTxt">물방울 · 가까운 사람 휴대폰에서도 이 소리로 울려요</div></div><div class="sp"></div><button class="mini bs" onclick="openSound()">고르기</button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">잠시 멈춤</div><div class="t3">여행·입원 때 노크방에 ‘잠시 멈춤’으로 보여요</div></div><div class="sp"></div><button class="sw" id="pauseSw" onclick="togglePause()"></button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">내 전화번호</div><div class="t3" id="phoneTxt">등록 안 함 · 친구 찾기·초대에 써요</div></div><div class="sp"></div><button class="mini bs" onclick="openPhone()">등록</button></div>
