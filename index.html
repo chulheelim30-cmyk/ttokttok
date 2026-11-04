@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-713499aa.js"></script>
+<script type="module" src="./app-35b32b60.js"></script>
 <script src="./pwa.js" defer></script>
 <script src="./back.js?v=2" defer></script>
 <style>
@@ -107,9 +107,9 @@
 <div class="card">
 <div class="set" style="display:block"><div class="row"><div class="t1" style="font-size:14px">안부 기준 시간</div><div class="sp"></div><div class="t1" id="thVal">48시간</div></div>
 <input type="range" min="12" max="72" step="6" value="48" id="thRange"><div class="row t3"><span>12시간</span><div class="sp"></div><span>72시간</span></div>
-<div class="t3" style="margin-top:4px">이 시간 동안 노크가 없으면 본인에게 먼저 묻고, 6시간 더 답이 없으면 노크방에 알려요</div></div>
+<div class="t3" style="margin-top:4px">이 시간 동안 노크가 없으면 노크방 사람들 화면에 ‘○시간째 노크 없음’으로 보여요. 휴대폰 알림은 아직 준비 중이에요</div></div>
 <div class="set"><div><div class="t1" style="font-size:14px">노크 소리</div><div class="t3" id="soundSetTxt">물방울 · 가까운 사람 휴대폰에서도 이 소리로 울려요</div></div><div class="sp"></div><button class="mini bs" onclick="openSound()">고르기</button></div>
-<div class="set"><div><div class="t1" style="font-size:14px">잠시 멈춤</div><div class="t3">여행·입원 때 알림을 쉬어요</div></div><div class="sp"></div><button class="sw" id="pauseSw" onclick="togglePause()"></button></div>
+<div class="set"><div><div class="t1" style="font-size:14px">잠시 멈춤</div><div class="t3">여행·입원 때 노크방에 ‘잠시 멈춤’으로 보여요</div></div><div class="sp"></div><button class="sw" id="pauseSw" onclick="togglePause()"></button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">내 전화번호</div><div class="t3" id="phoneTxt">등록 안 함 · 친구 찾기·초대에 써요</div></div><div class="sp"></div><button class="mini bs" onclick="openPhone()">등록</button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">내 노크방</div><div class="t3">노크방 고르기 · 새로 만들기 · 코드로 들어가기</div></div><div class="sp"></div><button class="mini bs" onclick="openRooms()">열기</button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">내 이름</div><div class="t3" id="myNameTxt"></div></div><div class="sp"></div><button class="mini bs" onclick="openRename()">바꾸기</button></div>
@@ -264,8 +264,8 @@
 <div class="t2" style="font-size:15px;margin-top:10px;line-height:1.7" id="checkTxt">48시간 동안 노크가 없었어요.<br>괜찮다면 한 번만 두드려 주세요.</div></div>
 <div style="padding:26px 22px 0"><button class="btn bp" onclick="checkOk()">괜찮아요, 지금 노크할게요</button>
 <button class="btn bs" style="margin-top:10px" onclick="checkPause()">잠시 멈춤 (여행·입원)</button>
-<button class="btn bw" style="margin-top:10px" onclick="checkIgnore()">답하지 않기 → 6시간 뒤 체험</button></div>
-<div class="card" style="margin-top:22px"><div class="t1">다음 단계 안내</div><div class="t2" style="margin-top:8px;line-height:1.8">① 지금: 본인에게 먼저 물어요<br>② 6시간 더 답이 없으면: 노크방에 알려요</div>
+<button class="btn bw" style="margin-top:10px;display:none" onclick="checkIgnore()">답하지 않기 → 6시간 뒤 체험</button></div>
+<div class="card" style="margin-top:22px"><div class="t1">다음 단계 안내</div><div class="t2" style="margin-top:8px;line-height:1.8">노크방 사람들이 앱을 열면 ‘○시간째 노크 없음’을 볼 수 있어요.<br>노크가 끊겼을 때 휴대폰으로 알려 주는 기능은 준비 중이에요.</div>
 <div class="t3" style="margin-top:8px">응급 구조 서비스가 아닙니다</div></div>
 </div>
 
@@ -284,7 +284,7 @@
 <div id="onbDrop" style="margin-top:30px"></div>
 <div style="font-size:40px;font-weight:800;margin-top:14px">또옥또옥</div>
 <div style="font-size:19px;font-weight:700;line-height:1.5;margin-top:8px">하루 1초 노크로<br>가까운 사람과 ‘오늘’을 주고받아요</div>
-<div style="font-size:14px;line-height:1.8;color:#dbe6f4;margin-top:16px">· 하루 한 번, 그림을 두 번 두드려요<br>· 노크할 때마다 우리 그림이 한 칸씩 열려요<br>· 노크가 끊기면 “괜찮아요?”가 먼저 가요</div>
+<div style="font-size:14px;line-height:1.8;color:#dbe6f4;margin-top:16px">· 하루 한 번, 그림을 두 번 두드려요<br>· 노크할 때마다 우리 그림이 한 칸씩 열려요<br>· 노크가 끊기면 노크방 사람들이 알 수 있어요</div>
 <div id="onbJoin" style="display:none;margin-top:22px;background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px"><div style="font-size:12.5px;color:#dbe6f4">초대받은 노크방</div><div style="font-size:18px;font-weight:800;margin-top:2px" id="onbJoinName"></div><div style="font-size:12.5px;color:#b9cbe3;margin-top:2px" id="onbJoinSub"></div>
 <div id="onbIos" style="display:none;font-size:12.5px;color:#ffd34d;margin-top:8px;line-height:1.6">아이폰은 먼저 사파리 공유 버튼 → <b>홈 화면에 추가</b>를 한 뒤, 홈 화면 앱에서 초대 코드를 넣어 주세요. 사파리와 홈 화면 앱은 기록이 따로예요.</div></div>
 <div style="margin-top:24px;font-size:14px;font-weight:700">노크방에서 불릴 이름</div>
