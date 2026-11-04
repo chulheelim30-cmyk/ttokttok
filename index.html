@@ -13,8 +13,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Pen+Script&display=swap">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-499dbf8c.js"></script>
+<script type="module" src="./app-765f59b8.js"></script>
 <script src="./pwa.js" defer></script>
 <script src="./back.js?v=2" defer></script>
 <style>
@@ -64,6 +65,65 @@
 .th video{width:100%;height:100%;object-fit:cover;display:block}
 .th.blur video{filter:blur(9px) saturate(.8);transform:scale(1.2)}
 .pv video.pv-blur{filter:blur(14px) saturate(.8);transform:scale(1.2)}
+/* ===== 연습장 테마 (B안 + 풍년이) ===== */
+:root{--paper:#fffef9;--ink:#23324a;--pline:#c9ddf5;--pmargin:#ff9f9f;--marker:#ff8a3d}
+html,body{background:#efe9dc;color:var(--ink)}
+body,button,input,select,textarea{font-family:'Gaegu',-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+#app{background:var(--paper);background-image:linear-gradient(90deg,transparent 28px,var(--pmargin) 28px,var(--pmargin) 30px,transparent 30px),repeating-linear-gradient(var(--paper) 0 33px,var(--pline) 33px 34px)}
+.logo{font-weight:700;font-size:25px;color:var(--ink);letter-spacing:-.5px}
+#logoDrop{display:none}
+.paw-logo{width:30px;height:30px;flex:none;transform:rotate(-8deg)}
+.t1{font-size:18px;font-weight:700;color:var(--ink)}
+.t2{font-size:15.5px;color:#4a5a72}
+.t3{font-size:14px;color:#5b6a80}
+.cap{font-size:17px;color:#4a5a72}
+.small{font-size:14px;color:#6a7a92}
+.sec{font-size:16px;color:#4a5a72}
+.card{background:#fff;border-radius:3px;box-shadow:0 3px 8px rgba(35,50,74,.14)}
+.card.plus-card{background:linear-gradient(135deg,#14284b,#1f5fa8);border-radius:14px 6px 16px 8px}
+.card.plus-card .t3{color:#dbe6f4}
+.card.demo{background:#fff}
+.chip{font-size:15px;background:#fff2a8;color:var(--ink);border-radius:2px;box-shadow:1px 2px 0 rgba(35,50,74,.15);font-weight:700}
+.chip.g{background:#d6f5e3;color:var(--ink)}
+.chip.y{background:#ffd6e4;color:var(--ink)}
+.btn{font-size:19px;font-weight:700}
+.btn.bp,.bp{background:#fff3e6;color:#b4480b;border:3px solid var(--marker);border-radius:26px 18px 28px 16px}
+.btn.bs,.bs{background:#eef4fc;color:#2a5fb5;border:2px dashed #9fb4d3}
+.mini{font-size:14px}
+.inp{font-size:18px}
+.nav{background:var(--paper);border-top:2px solid var(--ink)}
+.nav button{font-size:15px;color:#4a5a72}
+.nav button.on{color:#b4480b;font-weight:700}
+.sheet .pan{background:var(--paper);background-image:repeating-linear-gradient(var(--paper) 0 33px,var(--pline) 33px 34px)}
+.day-line{font-family:'Nanum Pen Script',cursive;font-size:23px;color:#6a7a92;padding:4px 22px 0 40px}
+#v-knock .top{padding-left:36px}
+.polaroid{position:relative;margin:22px 26px 8px;padding:12px 12px 16px;border-radius:2px;transform:rotate(1.2deg);box-shadow:0 5px 12px rgba(35,50,74,.18)}
+.polaroid .pic-btn{border-radius:0;box-shadow:none;margin-top:8px}
+.polaroid .tape{position:absolute;top:-10px;width:74px;height:22px;z-index:2;pointer-events:none}
+.polaroid .t1a{left:34px;background:rgba(255,224,102,.85);transform:rotate(-10deg)}
+.polaroid .t2a{right:30px;background:rgba(255,209,224,.9);transform:rotate(9deg)}
+.pic-chip{background:#fff2a8;color:var(--ink);border-radius:2px;font-size:15px;box-shadow:1px 2px 0 rgba(35,50,74,.2);transform:rotate(-3deg)}
+.ok-stamp{position:absolute;right:-8px;bottom:-18px;z-index:5;width:82px;height:82px;border:4px solid #e23c3c;border-radius:50%;color:#e23c3c;font-weight:700;font-size:19px;line-height:1.05;text-align:center;display:none;align-items:center;justify-content:center;transform:rotate(-14deg);background:rgba(255,254,249,.6);pointer-events:none}
+.polaroid.done .ok-stamp{display:flex;animation:okst .45s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes okst{0%{opacity:0;transform:scale(2.2) rotate(-25deg)}60%{opacity:1;transform:scale(.92) rotate(-12deg)}100%{transform:scale(1) rotate(-14deg)}}
+.knockwrap{margin-top:8px}
+.pung{display:flex;align-items:flex-end;gap:4px;padding:0 18px 0 22px;width:100%;box-sizing:border-box}
+.pung-cat{width:104px;height:104px;flex:none}
+.pung .eye-happy,.pung .arm-up,.pung .pung-heart{display:none}
+.pung.done .eye-open,.pung.done .arm-rest{display:none}
+.pung.done .eye-happy,.pung.done .arm-up,.pung.done .pung-heart{display:inline}
+.pung.tap .arm-rest{display:none}
+.pung.tap .arm-up{display:inline;animation:pawt .3s ease-in-out;transform-origin:132px 120px}
+@keyframes pawt{0%{transform:rotate(0)}50%{transform:rotate(-24deg)}100%{transform:rotate(0)}}
+.pung-talk{flex:1;padding-bottom:14px;text-align:left}
+.pung-name{font-family:'Nanum Pen Script',cursive;font-size:19px;color:#6a7a92;margin-left:6px}
+.pung-say.knock-head{display:inline-block;background:#fff;border:2px solid var(--ink);border-radius:16px 6px 16px 12px;padding:2px 12px;font-family:'Nanum Pen Script',cursive;font-weight:400;font-size:27px;color:var(--ink);text-align:left;transform:rotate(-2deg)}
+.knockwrap .cap{margin-top:4px}
+.chips .chip{transform:rotate(-1.5deg)}
+.chips .chip+.chip{transform:rotate(2deg)}
+.kdots i{background:#e9eef6}
+.kdots i.on{background:#9aa6ba}
+.kdots i.me.on{background:#ffb3c7}
 </style>
 </head>
 <body>
@@ -71,14 +131,15 @@
 
 <!-- 노크 -->
 <section class="view" id="v-knock">
-<div class="top"><div class="logo"><span id="logoDrop"></span>또옥또옥</div><button class="chip" onclick="openRooms()"><span id="roomName">우리 가족 노크방</span> ▾<i id="roomDot"></i></button></div>
-<div class="card">
+<div class="day-line" id="dayLine"></div>
+<div class="top"><div class="logo"><span id="logoDrop"></span><svg class="paw-logo" viewBox="0 0 120 120" aria-hidden="true"><path d="M60 64 C80 64 94 78 92 94 C90 108 74 110 60 104 C46 110 30 108 28 94 C26 78 40 64 60 64 Z" fill="#ffb3c7" stroke="#23324a" stroke-width="7"/><path d="M30 26 C34 36 40 40 39 47 C38 54 28 55 26 48 C25 41 29 36 30 26 Z M52 12 C56 22 62 26 61 33 C60 40 50 41 48 34 C47 27 51 22 52 12 Z M74 12 C78 22 84 26 83 33 C82 40 72 41 70 34 C69 27 73 22 74 12 Z M94 26 C98 36 104 40 103 47 C102 54 92 55 90 48 C89 41 93 36 94 26 Z" fill="#bfe3ff" stroke="#23324a" stroke-width="6"/></svg>또옥또옥</div><button class="chip" onclick="openRooms()"><span id="roomName">우리 가족 노크방</span> ▾<i id="roomDot"></i></button></div>
+<div class="card polaroid" id="polaroid"><i class="tape t1a"></i><i class="tape t2a"></i><div class="ok-stamp" aria-hidden="true">참 잘<br>했어요</div>
 <div class="row"><div><div class="t1" id="picTitle">1번째 우리 그림</div><div class="t2" id="picSub">협업 작가 · 「은행잎 지는 저녁」</div></div><div class="sp"></div><div class="t1" style="color:var(--blue);display:none" id="picCount">0/30</div></div>
 <div class="bar" style="display:none"><i id="picBar" style="width:0"></i></div>
 <button class="board pic-btn" id="knockBtn" aria-label="그림을 두 번 두드려 노크"><div class="board-in" id="board"></div><span class="pic-chip" id="picChip">0/30칸</span><span id="knockDrop" hidden></span><b id="knockLabel" hidden>또옥, 또옥</b></button>
 </div>
 <div class="knockwrap">
-<div class="knock-head" id="knockHead">그림을 두 번 두드려요</div>
+<div class="pung" id="pung"><svg class="pung-cat" viewBox="0 0 200 200" aria-hidden="true"><path d="M58 178 C50 128 70 100 100 100 C130 100 150 128 142 178 Z" fill="#9aa6ba" stroke="#23324a" stroke-width="4.5"/><path d="M70 112 L64 80 L88 102 M130 112 L136 80 L112 102" fill="#9aa6ba" stroke="#23324a" stroke-width="4.5" stroke-linejoin="round"/><g class="eye-open"><circle cx="87" cy="132" r="5" fill="#7cc48a" stroke="#23324a" stroke-width="2"/><circle cx="113" cy="132" r="5" fill="#7cc48a" stroke="#23324a" stroke-width="2"/><path d="M94 144 Q97 148 100 144 Q103 148 106 144" fill="none" stroke="#23324a" stroke-width="3.2" stroke-linecap="round"/></g><g class="eye-happy"><path d="M80 132 Q87 124 94 132 M106 132 Q113 124 120 132" fill="none" stroke="#23324a" stroke-width="3.6" stroke-linecap="round"/><path d="M92 142 Q100 154 108 142" fill="none" stroke="#23324a" stroke-width="3.2" stroke-linecap="round"/></g><path d="M78 140 L60 136 M78 146 L60 148 M122 140 L140 136 M122 146 L140 148" stroke="#23324a" stroke-width="2.6" stroke-linecap="round"/><g class="arm-rest"><path d="M126 150 C132 162 136 170 134 178" fill="none" stroke="#23324a" stroke-width="10" stroke-linecap="round"/><path d="M126 150 C132 162 136 170 134 178" fill="none" stroke="#9aa6ba" stroke-width="5" stroke-linecap="round"/></g><g class="arm-up"><path d="M132 120 C142 98 148 82 144 68" fill="none" stroke="#23324a" stroke-width="10" stroke-linecap="round"/><path d="M132 120 C142 98 148 82 144 68" fill="none" stroke="#9aa6ba" stroke-width="5" stroke-linecap="round"/><path d="M154 72 l8 -5 M157 84 l10 0" stroke="#23324a" stroke-width="3" stroke-linecap="round"/></g><path d="M140 170 Q176 164 168 132" fill="none" stroke="#23324a" stroke-width="5" stroke-linecap="round"/><path class="pung-heart" d="M150 56 C150 46 164 44 166 54 C168 44 182 46 182 56 C182 68 166 76 166 80 C166 76 150 68 150 56 Z" fill="#ff9bb3" stroke="#23324a" stroke-width="2.6"/></svg><div class="pung-talk"><div class="pung-name">풍년이</div><div class="knock-head pung-say" id="knockHead">...잘 있어?</div></div></div>
 <div class="cap" id="knockCap">그림을 <b>두 번</b> 두드리면 노크방에 오늘의 안부가 가요</div>
 <div class="chips"><span class="chip" id="streakChip">0일 연속 노크</span><span class="chip beta-only" id="goldChip" style="background:#fff1d6;color:#8a5a00;display:none">황금 칸 3개 숨어 있어요</span><span class="chip g" id="todayChip" style="display:none">오늘 0/1명 노크</span><button class="chip" style="background:#14284b;color:#fff;display:none" onclick="openSound()" id="soundChip">♪ 물방울</button></div>
 </div>
