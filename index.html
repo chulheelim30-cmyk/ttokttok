@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-fa0d9e42.js"></script>
+<script type="module" src="./app-42d895de.js"></script>
 <script src="./pwa.js" defer></script>
 <script src="./back.js?v=2" defer></script>
 <style>
@@ -108,7 +108,7 @@
 <!-- 설정 -->
 <section class="view hide" id="v-set">
 <div class="top"><div class="logo" style="font-size:18px">설정</div></div>
-<div class="card" id="opCard" style="display:none"><div class="row"><div class="t1" style="font-size:14px">운영자 · 화면 모드</div><div class="sp"></div><span class="chip y">나만 보여요</span></div><div class="t3" id="opModeTxt" style="margin-top:4px"></div><div class="row" style="gap:8px;margin-top:10px"><button class="btn bs" id="opBeta" style="flex:1;padding:12px" onclick="setViewMode(0)">현재 버전</button><button class="btn bs" id="opRel" style="flex:1;padding:12px" onclick="setViewMode(1)">토스 버전</button></div></div>
+<div class="card" id="opCard" style="display:none"><div class="row"><div class="t1" style="font-size:14px">운영자 · 화면 모드</div><div class="sp"></div><span class="chip y">나만 보여요</span></div><div class="t3" id="opModeTxt" style="margin-top:4px"></div><div class="row" style="gap:8px;margin-top:10px"><button class="btn bs" id="opBeta" style="flex:1;padding:12px" onclick="setViewMode(0)">현재 버전</button><button class="btn bs" id="opRel" style="flex:1;padding:12px" onclick="setViewMode(1)">토스 버전</button></div><button class="btn bw" style="margin-top:8px;padding:12px" onclick="opGallery()">모든 그림 미리보기</button></div>
 <button class="card plus-card" onclick="openPlus()"><div class="row"><div style="text-align:left"><div class="t1" style="font-size:15px;color:#fff">또옥또옥 플러스</div><div class="t3" id="plusSetTxt" style="color:#dbe6f4">부모님 안부를 더 확실하게 · 베타 기간 무료</div></div><div class="sp"></div><span class="mini" style="background:#ffd34d;color:#14284b">알아보기</span></div></button>
 <div class="card">
 <div class="set" style="display:block"><div class="row"><div class="t1" style="font-size:14px">안부 기준 시간</div><div class="sp"></div><div class="t1" id="thVal">48시간</div></div>
@@ -167,6 +167,12 @@
 <button class="btn bp" style="margin-top:12px" onclick="submitCreate()">만들기</button>
 <div class="t3" style="text-align:center;margin-top:8px" id="createHint"></div>
 </div></div></div>
+
+<div class="sheet" id="opGallerySheet"><div class="dim" onclick="closeOpGallery()"></div><div class="pan"><div class="grab"></div>
+<div class="top"><div class="logo" style="font-size:18px">모든 그림 미리보기</div><div class="sp"></div><span class="chip y">운영자</span></div>
+<div style="padding:0 14px"><div class="t3" id="opGalleryTxt" style="margin:0 4px 10px"></div>
+<div class="card" style="margin:0"><div class="albumgrid" id="opGrid"></div></div>
+<button class="btn bw" style="margin-top:12px" onclick="closeOpGallery()">닫기</button></div></div></div>
 
 <div class="sheet" id="goldSheet"><div class="dim" onclick="closeGold()"></div><div class="pan"><div class="grab"></div>
 <div style="padding:8px 18px 0;text-align:center">
