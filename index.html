@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-434d5683.js"></script>
+<script type="module" src="./app-713499aa.js"></script>
 <script src="./pwa.js" defer></script>
 <script src="./back.js?v=2" defer></script>
 <style>
@@ -68,14 +68,14 @@
 <section class="view" id="v-knock">
 <div class="top"><div class="logo"><span id="logoDrop"></span>또옥또옥</div><button class="chip" onclick="openRooms()"><span id="roomName">우리 가족 노크방</span> ▾<i id="roomDot"></i></button></div>
 <div class="card">
-<div class="row"><div><div class="t1" id="picTitle">11월의 숨은 그림</div><div class="t2" id="picSub">협업 작가 · 「은행잎 지는 저녁」</div></div><div class="sp"></div><div class="t1" style="color:var(--blue)" id="picCount">0/30</div></div>
-<div class="bar"><i id="picBar" style="width:0"></i></div>
+<div class="row"><div><div class="t1" id="picTitle">1번째 우리 그림</div><div class="t2" id="picSub">협업 작가 · 「은행잎 지는 저녁」</div></div><div class="sp"></div><div class="t1" style="color:var(--blue);display:none" id="picCount">0/30</div></div>
+<div class="bar" style="display:none"><i id="picBar" style="width:0"></i></div>
 <button class="board pic-btn" id="knockBtn" aria-label="그림을 두 번 두드려 노크"><div class="board-in" id="board"></div><span class="pic-chip" id="picChip">0/30칸</span><span class="gold-chip" id="goldChip">황금 칸 3개 숨어 있어요</span><span id="knockDrop" hidden></span><b id="knockLabel" hidden>또옥, 또옥</b></button>
 </div>
 <div class="knockwrap">
 <div class="knock-head" id="knockHead">그림을 두 번 두드려요</div>
 <div class="cap" id="knockCap">그림을 <b>두 번</b> 두드리면 노크방에 오늘의 안부가 가요</div>
-<div class="chips"><span class="chip" id="streakChip">0일 연속 노크</span><span class="chip g" id="todayChip">오늘 0/1명 노크</span><button class="chip" style="background:#14284b;color:#fff" onclick="openSound()" id="soundChip">♪ 물방울</button></div>
+<div class="chips"><span class="chip" id="streakChip">0일 연속 노크</span><span class="chip g" id="todayChip" style="display:none">오늘 0/1명 노크</span><button class="chip" style="background:#14284b;color:#fff;display:none" onclick="openSound()" id="soundChip">♪ 물방울</button></div>
 </div>
 <div class="card"><div class="row"><div class="t1" style="font-size:14px">오늘 노크한 사람</div><div class="sp"></div><div class="t3" id="dotCnt"></div></div><div class="kdots" id="dots"></div></div>
 <div class="small">노크방 모두가 함께 채우는 그림이에요</div>
@@ -97,7 +97,7 @@
 <section class="view hide" id="v-album">
 <div class="top"><div class="logo" style="font-size:18px">내 그림첩</div><span class="chip" id="albumCnt">0/12장</span></div>
 <div class="card"><div class="albumgrid" id="albumGrid"></div></div>
-<div class="card"><div class="row"><div class="av" style="background:var(--gold)">작가</div><div><div class="t1">이번 달 작가</div><div class="t3">협업 작가의 그림이 매달 새로 열려요</div></div></div></div>
+<div class="card"><div class="row"><div class="av" style="background:var(--gold)">그림</div><div><div class="t1">함께 채우는 그림</div><div class="t3">노크방이 그림 한 장을 다 채우면 다음 그림이 열려요</div></div></div></div>
 </section>
 
 <!-- 설정 -->
@@ -123,7 +123,7 @@
 <button class="btn bw" style="margin-top:8px" onclick="fillPicture()">그림 완성 직전까지 채우기</button>
 <button class="btn" style="margin-top:8px;color:#c0392b" id="resetBtn" onclick="resetAll()">처음부터 다시 (데이터 초기화)</button>
 </div>
-<div class="small">응급 구조 서비스가 아닙니다 · 위치·건강 정보는 받지 않아요<br>또옥또옥 v0.3</div>
+<div class="small">응급 구조 서비스가 아닙니다 · 위치·건강 정보는 받지 않아요<br>또옥또옥 v0.4 베타</div>
 </section>
 
 <nav class="nav">
@@ -284,14 +284,12 @@
 <div id="onbDrop" style="margin-top:30px"></div>
 <div style="font-size:40px;font-weight:800;margin-top:14px">또옥또옥</div>
 <div style="font-size:19px;font-weight:700;line-height:1.5;margin-top:8px">하루 1초 노크로<br>가까운 사람과 ‘오늘’을 주고받아요</div>
-<div style="font-size:14px;line-height:1.8;color:#dbe6f4;margin-top:16px">· 하루 한 번, 그림을 두 번 두드려요<br>· 노크할 때마다 작가 그림이 한 칸씩 열려요<br>· 노크가 끊기면 “괜찮아요?”가 먼저 가요</div>
+<div style="font-size:14px;line-height:1.8;color:#dbe6f4;margin-top:16px">· 하루 한 번, 그림을 두 번 두드려요<br>· 노크할 때마다 우리 그림이 한 칸씩 열려요<br>· 노크가 끊기면 “괜찮아요?”가 먼저 가요</div>
 <div id="onbJoin" style="display:none;margin-top:22px;background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px"><div style="font-size:12.5px;color:#dbe6f4">초대받은 노크방</div><div style="font-size:18px;font-weight:800;margin-top:2px" id="onbJoinName"></div><div style="font-size:12.5px;color:#b9cbe3;margin-top:2px" id="onbJoinSub"></div>
 <div id="onbIos" style="display:none;font-size:12.5px;color:#ffd34d;margin-top:8px;line-height:1.6">아이폰은 먼저 사파리 공유 버튼 → <b>홈 화면에 추가</b>를 한 뒤, 홈 화면 앱에서 초대 코드를 넣어 주세요. 사파리와 홈 화면 앱은 기록이 따로예요.</div></div>
 <div style="margin-top:24px;font-size:14px;font-weight:700">노크방에서 불릴 이름</div>
 <input id="nameInput" maxlength="8" placeholder="예: 민지" autocomplete="off">
-<div style="margin-top:14px;font-size:14px;font-weight:700">내 전화번호 <span style="font-weight:400;color:#b9cbe3">(선택)</span></div>
-<input id="onbPhone" inputmode="tel" placeholder="010-0000-0000" autocomplete="tel">
-<div style="font-size:12px;color:#b9cbe3;margin-top:6px;line-height:1.5">전화번호로 받은 초대를 찾아 드려요 · 암호화해 저장하고 다른 사람에게 보이지 않아요</div>
+<div style="display:none"><input id="onbPhone" inputmode="tel" autocomplete="tel"></div>
 <button class="btn" id="onbPrimary" style="background:#ffd34d;color:var(--navy);margin-top:16px" onclick="startApp('create')">새 노크방 만들기</button>
 <button class="btn" id="onbSecondary" style="background:rgba(255,255,255,.14);color:#fff;margin-top:10px" onclick="startApp('code')">초대받았어요 · 코드로 들어가기</button>
 <div class="t3" style="color:#b9cbe3;margin-top:16px;text-align:center">초대 링크를 받았다면 링크를 눌러 열면 바로 들어갈 수 있어요</div>
