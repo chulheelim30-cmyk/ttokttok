@@ -86,7 +86,8 @@ html,body{background:#ece6da;color:var(--ink)}
 .polaroid .t1a{left:30px;background:rgba(255,224,102,.8);transform:rotate(-9deg)}
 .polaroid .t2a{right:28px;background:rgba(255,209,224,.85);transform:rotate(8deg)}
 .pic-chip{background:#fff2b8;color:var(--ink);border-radius:4px}
-.ok-stamp{position:absolute;right:-8px;bottom:-16px;z-index:5;width:78px;height:78px;border:4px solid #e23c3c;border-radius:50%;color:#e23c3c;font-weight:800;font-size:15px;line-height:1.1;text-align:center;display:none;align-items:center;justify-content:center;transform:rotate(-14deg);background:rgba(255,255,255,.7);pointer-events:none}
+.ok-stamp{position:absolute;right:-6px;bottom:-14px;z-index:5;width:74px;height:74px;border:3px dashed #ff7b95;border-radius:50%;color:#e2506e;font-weight:800;font-size:13px;line-height:1;text-align:center;display:none;flex-direction:column;align-items:center;justify-content:center;gap:1px;transform:rotate(-14deg);background:rgba(255,255,255,.85);pointer-events:none}
+.ok-stamp svg{width:36px;height:36px;opacity:.9}
 .polaroid.done .ok-stamp{display:flex;animation:okst .45s cubic-bezier(.2,.9,.3,1.3) .9s both}
 @keyframes okst{0%{opacity:0;transform:scale(2.2) rotate(-25deg)}60%{opacity:1;transform:scale(.92) rotate(-12deg)}100%{opacity:1;transform:scale(1) rotate(-14deg)}}
 .knockwrap{margin-top:6px}
@@ -137,7 +138,7 @@ html,body{background:#ece6da;color:var(--ink)}
 <section class="view" id="v-knock">
 <div class="day-line" id="dayLine"></div>
 <div class="top"><div class="logo"><span id="logoDrop"></span><svg class="paw-logo" viewBox="0 0 120 120" aria-hidden="true"><path d="M60 64 C80 64 94 78 92 94 C90 108 74 110 60 104 C46 110 30 108 28 94 C26 78 40 64 60 64 Z" fill="#ffb3c7" stroke="#23324a" stroke-width="7"/><path d="M30 26 C34 36 40 40 39 47 C38 54 28 55 26 48 C25 41 29 36 30 26 Z M52 12 C56 22 62 26 61 33 C60 40 50 41 48 34 C47 27 51 22 52 12 Z M74 12 C78 22 84 26 83 33 C82 40 72 41 70 34 C69 27 73 22 74 12 Z M94 26 C98 36 104 40 103 47 C102 54 92 55 90 48 C89 41 93 36 94 26 Z" fill="#bfe3ff" stroke="#23324a" stroke-width="6"/></svg>또옥또옥</div><button class="chip" onclick="openRooms()"><span id="roomName">우리 가족 노크방</span> ▾<i id="roomDot"></i></button></div>
-<div class="card polaroid" id="polaroid"><i class="tape t1a"></i><i class="tape t2a"></i><div class="ok-stamp" aria-hidden="true">참 잘<br>했어요</div>
+<div class="card polaroid" id="polaroid"><i class="tape t1a"></i><i class="tape t2a"></i><div class="ok-stamp" aria-hidden="true"><svg viewBox="0 0 120 120"><path d="M60 64 C80 64 94 78 92 94 C90 108 74 110 60 104 C46 110 30 108 28 94 C26 78 40 64 60 64 Z" fill="#ff8fa8"/><path d="M30 26 C34 36 40 40 39 47 C38 54 28 55 26 48 C25 41 29 36 30 26 Z M52 12 C56 22 62 26 61 33 C60 40 50 41 48 34 C47 27 51 22 52 12 Z M74 12 C78 22 84 26 83 33 C82 40 72 41 70 34 C69 27 73 22 74 12 Z M94 26 C98 36 104 40 103 47 C102 54 92 55 90 48 C89 41 93 36 94 26 Z" fill="#ff8fa8"/></svg><span>또옥!</span></div>
 <div class="row"><div><div class="t1" id="picTitle">1번째 우리 그림</div><div class="t2" id="picSub">협업 작가 · 「은행잎 지는 저녁」</div></div><div class="sp"></div><div class="t1" style="color:var(--blue);display:none" id="picCount">0/30</div></div>
 <div class="bar" style="display:none"><i id="picBar" style="width:0"></i></div>
 <button class="board pic-btn" id="knockBtn" aria-label="그림을 두 번 두드려 노크"><div class="board-in" id="board"></div><span class="pic-chip" id="picChip">0/30칸</span><span id="knockDrop" hidden></span><b id="knockLabel" hidden>또옥, 또옥</b></button>
