@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-35b32b60.js"></script>
+<script type="module" src="./app-bcf9b0bb.js"></script>
 <script src="./pwa.js" defer></script>
 <script src="./back.js?v=2" defer></script>
 <style>
@@ -59,6 +59,7 @@
 .gstar{font-style:normal;color:#ffd34d;font-size:13px;line-height:1;margin:3px 4px 0 0;text-shadow:0 1px 2px rgba(20,40,75,.6)}
 .gold-burst{width:84px;height:84px;margin:6px auto 0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#e0a92e);color:#fff;font-size:44px;line-height:84px;box-shadow:0 0 0 10px rgba(255,211,77,.25),0 10px 26px rgba(224,169,46,.45)}
 .gold-h{font-size:24px;font-weight:900;color:var(--navy);margin-top:14px}
+.rel .beta-only{display:none!important}
 </style>
 </head>
 <body>
@@ -75,7 +76,7 @@
 <div class="knockwrap">
 <div class="knock-head" id="knockHead">그림을 두 번 두드려요</div>
 <div class="cap" id="knockCap">그림을 <b>두 번</b> 두드리면 노크방에 오늘의 안부가 가요</div>
-<div class="chips"><span class="chip" id="streakChip">0일 연속 노크</span><span class="chip" id="goldChip" style="background:#fff1d6;color:#8a5a00;display:none">황금 칸 3개 숨어 있어요</span><span class="chip g" id="todayChip" style="display:none">오늘 0/1명 노크</span><button class="chip" style="background:#14284b;color:#fff;display:none" onclick="openSound()" id="soundChip">♪ 물방울</button></div>
+<div class="chips"><span class="chip" id="streakChip">0일 연속 노크</span><span class="chip beta-only" id="goldChip" style="background:#fff1d6;color:#8a5a00;display:none">황금 칸 3개 숨어 있어요</span><span class="chip g" id="todayChip" style="display:none">오늘 0/1명 노크</span><button class="chip" style="background:#14284b;color:#fff;display:none" onclick="openSound()" id="soundChip">♪ 물방울</button></div>
 </div>
 <div class="card"><div class="row"><div class="t1" style="font-size:14px">오늘 노크한 사람</div><div class="sp"></div><div class="t3" id="dotCnt"></div></div><div class="kdots" id="dots"></div></div>
 <div class="small">노크방 모두가 함께 채우는 그림이에요</div>
@@ -123,7 +124,7 @@
 <button class="btn bw" style="margin-top:8px" onclick="fillPicture()">그림 완성 직전까지 채우기</button>
 <button class="btn" style="margin-top:8px;color:#c0392b" id="resetBtn" onclick="resetAll()">처음부터 다시 (데이터 초기화)</button>
 </div>
-<div class="small">응급 구조 서비스가 아닙니다 · 위치·건강 정보는 받지 않아요<br>또옥또옥 v0.4 베타</div>
+<div class="small">응급 구조 서비스가 아닙니다 · 위치·건강 정보는 받지 않아요<br>또옥또옥 v0.4 베타<br><a href="./privacy.html" style="color:inherit;text-decoration:underline">개인정보처리방침</a></div>
 </section>
 
 <nav class="nav">
@@ -193,10 +194,10 @@
 <div class="plus-f"><b class="ok">✓</b><div><div class="t1">하루 3번 노크</div><div class="t3">하루 1번이 3번으로 · 노크할 때마다 우리 그림이 한 칸씩 더 열려요</div></div></div>
 <div class="plus-f"><b class="ok">✓</b><div><div class="t1">노크방 5개까지</div><div class="t3">가족방, 친구방, 동네방… 무료 2개에서 5개로</div></div></div>
 <div class="plus-f"><b class="ok">✓</b><div><div class="t1">플러스 노크 소리 전부</div><div class="t3">내 노크가 가까운 사람 폰에서도 이 소리로 울려요</div></div></div>
-<div class="sec" style="margin-top:14px">곧 열려요</div>
-<div class="plus-f"><b>◷</b><div><div class="t1">단계별 안심 알림</div><div class="t3">노크가 끊기면 앱 알림 → 문자 → 전화 순으로 보호자에게</div></div></div>
-<div class="plus-f"><b>◷</b><div><div class="t1">보호자 여러 명 · 월간 안부 리포트</div><div class="t3">한 달 노크 기록을 가족 모두에게</div></div></div>
-<div class="plus-price"><b>월 2,900원</b><span>베타 서비스 기간에는 무료예요</span></div>
+<div class="sec beta-only" style="margin-top:14px">곧 열려요</div>
+<div class="plus-f beta-only"><b>◷</b><div><div class="t1">단계별 안심 알림</div><div class="t3">노크가 끊기면 앱 알림 → 문자 → 전화 순으로 보호자에게</div></div></div>
+<div class="plus-f beta-only"><b>◷</b><div><div class="t1">보호자 여러 명 · 월간 안부 리포트</div><div class="t3">한 달 노크 기록을 가족 모두에게</div></div></div>
+<div class="plus-price"><b class="beta-only">월 2,900원</b><span>베타 서비스 기간에는 무료예요</span></div>
 <button class="btn plus-go" id="plusStartBtn" onclick="startPlusTrial()">베타 기간 무료로 시작하기</button>
 <div class="t3" style="text-align:center;margin:8px 0 4px">정식 출시 전에 미리 알려 드려요 · 자동 결제 없음</div>
 </div></div></div>
