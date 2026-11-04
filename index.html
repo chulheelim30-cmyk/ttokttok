@@ -14,8 +14,24 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-fd04cf7d.js"></script>
+<script type="module" src="./app-358777cb.js"></script>
 <script src="./pwa.js" defer></script>
+<style>
+.pic-btn{display:block;width:100%;border:0;padding:0;margin-top:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 26px rgba(20,40,75,.16);font:inherit}
+.board-in{position:absolute;inset:0}
+.board-in>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.pic-chip{position:absolute;left:10px;top:10px;background:rgba(20,40,75,.85);color:#fff;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:800;pointer-events:none}
+.pic-btn .ripple{inset:auto;left:50%;top:50%;width:110px;height:110px;margin:-55px 0 0 -55px;border:4px solid #ffd34d;border-radius:50%}
+.grid .open.flash{animation:flb 1.1s ease-out forwards}
+@keyframes flb{0%{opacity:1;transform:scale(1);background:#ffd34d}55%{opacity:.95;transform:scale(1.08);background:#ffd34d}100%{opacity:0;transform:scale(.6);background:#ffd34d}}
+.knock-head{font-size:20px;font-weight:900;color:var(--navy);text-align:center}
+.knockwrap .cap{margin-top:6px}
+.kdots{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:5px;margin-top:10px}
+.kdots i{display:block;aspect-ratio:1;border-radius:50%;background:#e3e9f2}
+.kdots i.on{background:var(--navy)}
+.kdots i.me{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--gold)}
+.kdots i.me.on{background:var(--gold)}
+</style>
 </head>
 <body>
 <div id="app">
@@ -26,14 +42,15 @@
 <div class="card">
 <div class="row"><div><div class="t1" id="picTitle">11월의 숨은 그림</div><div class="t2" id="picSub">협업 작가 · 「은행잎 지는 저녁」</div></div><div class="sp"></div><div class="t1" style="color:var(--blue)" id="picCount">0/30</div></div>
 <div class="bar"><i id="picBar" style="width:0"></i></div>
-<div class="board" id="board"></div>
+<button class="board pic-btn" id="knockBtn" aria-label="그림을 두 번 두드려 노크"><div class="board-in" id="board"></div><span class="pic-chip" id="picChip">0/30칸</span><span id="knockDrop" hidden></span><b id="knockLabel" hidden>또옥, 또옥</b></button>
 </div>
 <div class="knockwrap">
-<button class="knock" id="knockBtn" aria-label="두 번 두드리기"><span id="knockDrop"></span><b id="knockLabel">또옥, 또옥</b></button>
+<div class="knock-head" id="knockHead">그림을 두 번 두드려요</div>
 <div class="cap" id="knockCap">그림을 <b>두 번</b> 두드리면 노크방에 오늘의 안부가 가요</div>
 <div class="chips"><span class="chip" id="streakChip">0일 연속 노크</span><span class="chip g" id="todayChip">오늘 0/1명 노크</span><button class="chip" style="background:#14284b;color:#fff" onclick="openSound()" id="soundChip">♪ 물방울</button></div>
 </div>
-<div class="small">그림은 예시이며 실제는 협업 작가 원화로 바뀌어요</div>
+<div class="card"><div class="row"><div class="t1" style="font-size:14px">오늘 노크한 사람</div><div class="sp"></div><div class="t3" id="dotCnt"></div></div><div class="kdots" id="dots"></div></div>
+<div class="small">노크방 모두가 함께 채우는 그림이에요</div>
 </section>
 
 <!-- 노크방 -->
