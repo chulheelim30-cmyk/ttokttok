@@ -14,12 +14,12 @@
 <meta name="apple-mobile-web-app-title" content="또옥또옥">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-70c1a9ce.js"></script>
+<script type="module" src="./app-712c3663.js"></script>
 <script src="./pwa.js" defer></script>
 <script src="./back.js?v=2" defer></script>
 <script src="./push.js?v=1" defer></script>
 <script src="./mood.js?v=1" defer></script>
-<script src="./rooms.js?v=3" defer></script>
+<script src="./rooms.js?v=4" defer></script>
 <script src="./account.js?v=1" defer></script>
 <style>
 .pic-btn{display:block;width:100%;border:0;padding:0;margin-top:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 26px rgba(20,40,75,.16);font:inherit}
@@ -381,6 +381,8 @@ html,body{background:#ece6da;color:var(--ink)}
 <div class="t3" style="margin-bottom:8px">가까운 사람에게 받은 6자리 숫자를 넣어 주세요</div>
 <input id="codeInput" inputmode="numeric" maxlength="7" autocomplete="off" placeholder="예: 482913" style="width:100%;font-size:22px;letter-spacing:6px;text-align:center;padding:15px 16px;border-radius:14px;border:1px solid var(--line);font-family:inherit">
 <div class="t2" id="codePreview" style="min-height:20px;margin-top:10px;text-align:center"></div>
+<div class="t3" style="margin:6px 0 6px">실명 · 방장에게만 보여요 (선택)</div>
+<input class="inp" id="codeRealInput" maxlength="20" autocomplete="name" placeholder="예: 홍길동 · 안 적어도 돼요">
 <button class="btn bp" style="margin-top:10px" onclick="submitCode()">노크방 들어가기</button>
 </div>
 </div></div>
@@ -423,8 +425,10 @@ html,body{background:#ece6da;color:var(--ink)}
 <div style="font-size:14px;line-height:1.8;color:#dbe6f4;margin-top:16px">· 하루 한 번, 그림을 두 번 톡톡 · 오늘 컨디션도 한 번에<br>· 소식이 없으면 본인에게 먼저, 그다음 노크방 사람들에게 알려요<br>· 전화 받을 필요도, 장비 설치도 없어요<br>· 노크가 모이면 우리 그림이 한 칸씩 열려요</div>
 <div id="onbJoin" style="display:none;margin-top:22px;background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px"><div style="font-size:12.5px;color:#dbe6f4">초대받은 노크방</div><div style="font-size:18px;font-weight:800;margin-top:2px" id="onbJoinName"></div><div style="font-size:12.5px;color:#b9cbe3;margin-top:2px" id="onbJoinSub"></div>
 <div id="onbIos" style="display:none;font-size:12.5px;color:#ffd34d;margin-top:8px;line-height:1.6">아이폰은 먼저 사파리 공유 버튼 → <b>홈 화면에 추가</b>를 한 뒤, 홈 화면 앱에서 초대 코드를 넣어 주세요. 사파리와 홈 화면 앱은 기록이 따로예요.</div></div>
-<div style="margin-top:24px;font-size:14px;font-weight:700">노크방에서 불릴 이름</div>
+<div style="margin-top:24px;font-size:14px;font-weight:700">별명 <span style="font-weight:500;color:#b9cbe3">· 노크방에서 불릴 이름</span></div>
 <input id="nameInput" maxlength="8" placeholder="예: 민지" autocomplete="off">
+<div id="onbRealBox" style="display:none"><div style="margin-top:14px;font-size:14px;font-weight:700">실명 <span style="font-weight:500;color:#b9cbe3">· 방장에게만 보여요 (선택)</span></div>
+<input id="onbRealInput" maxlength="20" placeholder="예: 홍길동" autocomplete="name"></div>
 <div style="display:none"><input id="onbPhone" inputmode="tel" autocomplete="tel"></div>
 <button class="btn" id="onbPrimary" style="background:#ffd34d;color:var(--navy);margin-top:16px" onclick="startApp('create')">새 노크방 만들기</button>
 <button class="btn" id="onbSecondary" style="background:rgba(255,255,255,.14);color:#fff;margin-top:10px" onclick="startApp('code')">초대받았어요 · 코드로 들어가기</button>

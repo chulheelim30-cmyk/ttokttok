@@ -126,8 +126,7 @@
 })();
 
 // 방장에게만 보이는 실명
-// - 구성원: 노크방에 들어오면 한 번 "방장이 알아볼 수 있게 실명을 알려 줄까요?"를 물어요 (안 적어도 돼요).
-//           '노크방 관리'에서 언제든 바꾸거나 지울 수 있어요.
+// - 구성원: 노크방에 들어갈 때 별명과 함께 실명(선택)을 적어요. '노크방 관리'에서 언제든 바꾸거나 지울 수 있어요.
 // - 방장: 노크방 목록과 관리 화면에서 별명 옆에 실명이 보여요.
 (function () {
   var names = {}, loadedRoom = null;
@@ -171,7 +170,7 @@
       document.getElementById('realSave').onclick = save;
     }
     var r = room();
-    document.getElementById('realLead').innerHTML = '‘' + esc(r && r.name || '노크방') + '’ 방장이 누구인지 알아볼 수 있게 실명을 알려 줄까요?<br><span class="t3">다른 구성원에게는 별명만 보여요. 안 적어도 괜찮아요.</span>';
+    document.getElementById('realLead').innerHTML = '‘' + esc(r && r.name || '노크방') + '’ 방장에게만 보이는 실명이에요.<br><span class="t3">다른 구성원에게는 별명만 보여요. 안 적어도 괜찮아요.</span>';
     document.getElementById('realInput').value = mine || '';
     s.classList.add('on');
   }
@@ -213,14 +212,53 @@
     }).catch(function () {});
   }
 
+  // 입장할 때 적은 실명을 들어간 방에 저장해요
+  var pending = '';
+  window.__ttAfterJoin = function (r) {
+    var v = (pending || '').trim(); pending = '';
+    ['onbRealInput', 'codeRealInput'].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ''; });
+    if (!v || !r || !r.id || !window.__ttRpc) return;
+    window.__ttRpc('set_real_name', { p_room: r.id, p_name: v }).then(function () { if (isOwner()) loadOwnerNames(); }).catch(function () {});
+  };
+  function bindInput(id) { var e = document.getElementById(id); if (e) e.addEventListener('input', function () { pending = e.value; }); }
+
+  // 전화번호 초대 수락: 들어가기 전에 실명(선택)을 같이 받아요
+  function inviteSheet(go) {
+    var s = document.getElementById('invEnterSheet');
+    if (!s) {
+      s = document.createElement('div'); s.className = 'sheet'; s.id = 'invEnterSheet';
+      s.innerHTML = '<div class="dim" data-x></div><div class="pan"><div class="grab"></div>' +
+        '<div class="top"><div class="logo" style="font-size:18px">노크방 들어가기</div></div>' +
+        '<div style="padding:0 18px"><div class="t3" style="margin-bottom:6px">별명 · 노크방에서 불릴 이름</div><div class="t1" id="invNick" style="font-size:16px"></div>' +
+        '<div class="t3" style="margin:14px 0 6px">실명 · 방장에게만 보여요 (선택)</div>' +
+        '<input class="inp" id="invRealInput" maxlength="20" autocomplete="name" placeholder="예: 홍길동 · 안 적어도 돼요">' +
+        '<button class="btn bp" style="margin-top:12px" id="invGo">들어가기</button>' +
+        '<button class="btn bw" style="margin-top:8px" data-x>그만두기</button></div></div>';
+      document.body.appendChild(s);
+      Array.prototype.forEach.call(s.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { s.classList.remove('on'); }; });
+    }
+    var nick = document.getElementById('myNameTxt');
+    document.getElementById('invNick').textContent = (nick && nick.textContent) || '설정에서 바꿀 수 있어요';
+    document.getElementById('invRealInput').value = '';
+    document.getElementById('invGo').onclick = function () { pending = document.getElementById('invRealInput').value; s.classList.remove('on'); go(); };
+    s.classList.add('on');
+  }
+
   window.addEventListener('load', function () {
     var om = window.openManage;
     if (typeof om === 'function') window.openManage = function () { var x = om.apply(this, arguments); manageRow(); loadOwnerNames(); return x; };
+    bindInput('onbRealInput'); bindInput('codeRealInput');
+    // 초대받아 시작할 때만 실명 칸을 보여요
+    var oj = document.getElementById('onbJoin'), box = document.getElementById('onbRealBox');
+    function syncOnb() { if (oj && box) box.style.display = oj.style.display === 'block' ? '' : 'none'; }
+    if (oj && 'MutationObserver' in window) { new MutationObserver(syncOnb).observe(oj, { attributes: true, attributeFilter: ['style'] }); syncOnb(); }
+    var ai = window.acceptInvite;
+    if (typeof ai === 'function') window.acceptInvite = function () { var self = this, args = arguments; inviteSheet(function () { ai.apply(self, args); }); };
     // 방이 바뀌거나 앱을 다시 열 때마다 확인
     var last = null;
     setInterval(function () {
       var r = room(); if (!r) return;
-      if (r.id !== last) { last = r.id; names = {}; loadOwnerNames(); setTimeout(maybeAsk, 2500); }
+      if (r.id !== last) { last = r.id; names = {}; loadOwnerNames(); }
     }, 1500);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) loadOwnerNames(); });
   });
