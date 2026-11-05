@@ -106,3 +106,21 @@
     if (cs && 'MutationObserver' in window) new MutationObserver(function () { if (!cs.classList.contains('on')) setTimeout(function () { window.__ttNewRoom = null; }, 1500); }).observe(cs, { attributes: true, attributeFilter: ['class'] });
   });
 })();
+
+// 플러스 '숨은 그림 미리 보기': 그림 창 안에서만 잠깐 보여 주고, 닫으면 다시 흐려져요
+(function () {
+  window.ttPeekPic = function () {
+    var plus = window.__ttIsPlus && window.__ttIsPlus();
+    if (!plus) { if (window.closePic) closePic(); if (window.openPlus) openPlus(); return; }
+    var n = window.__ttPicNow ? window.__ttPicNow() : 0;
+    window.__ttPeek = n;
+    if (window.__ttPicTap) window.__ttPicTap(n);
+    var b = document.getElementById('picBuy'); if (b) b.style.display = 'none';
+  };
+  window.addEventListener('load', function () {
+    var cp = window.closePic;
+    if (typeof cp === 'function') window.closePic = function () { window.__ttPeek = null; return cp.apply(this, arguments); };
+    var ps = document.getElementById('picSheet');
+    if (ps && 'MutationObserver' in window) new MutationObserver(function () { if (!ps.classList.contains('on')) window.__ttPeek = null; }).observe(ps, { attributes: true, attributeFilter: ['class'] });
+  });
+})();
