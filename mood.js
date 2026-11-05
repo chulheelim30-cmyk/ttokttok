@@ -18,7 +18,7 @@
   // 노크방 목록에 붙는 표시 (번들에서 불러요)
   window.__ttMoodTag = function (uid, isMe) {
     var m = (window.__ttMood || {})[uid] || (isMe ? myMood() : 0);
-    return m ? ' <span style="display:inline-flex;vertical-align:-4px;margin-left:2px" title="오늘 컨디션: ' + NAMES[m] + '">' + FACES[m] + '</span>' + (m === 3 ? '<b style="color:' + COLORS[3] + ';margin-left:2px">별로</b>' : '') : '';
+    return m ? ' · ' + (m === 3 ? '<b style="color:' + COLORS[3] + '">' + NAMES[m] + '</b>' : NAMES[m]) : '';
   };
   window.__ttSeenTag = function (mem) {
     if (!mem || !mem.last_seen_at) return '';
@@ -31,7 +31,8 @@
   // 이번 주 컨디션 7칸 (노크방 목록 이름 아래)
   var week = {}, weekRoom = null, DOT = { 1: '#4caf6d', 2: '#b7bfcc', 3: '#e05a4a' };
   function days7() { var o = []; for (var i = 6; i >= 0; i--) { o.push(new Date(Date.now() + 9 * 3600e3 - i * 864e5).toISOString().slice(0, 10)); } return o; }
-  window.__ttMoodWeek = function (uid) {
+  window.__ttMoodWeek = function () { return ''; }; // 이름 옆 7일 점은 쓰지 않아요 (주간 알림으로 대신)
+  function weekDotsUnused(uid) {
     var w = week[uid]; if (!w) return '';
     var d = days7();
     return '<span style="display:inline-flex;gap:3px;margin-left:6px;vertical-align:1px" title="최근 7일 컨디션">' + d.map(function (x) {
@@ -98,7 +99,7 @@
       var u = me(); if (u) { window.__ttMood = window.__ttMood || {}; window.__ttMood[u] = k; }
       render.edit = false; render();
       var say = { 1: '좋다옹! 오늘도 반가워', 2: '그냥 그런 날도 있지', 3: '토닥토닥… 노크방에 알렸어' }[k];
-      var u2 = me(); if (u2) { week[u2] = week[u2] || {}; week[u2][today()] = k; if (window.__ttRerender) window.__ttRerender(); }
+      var u2 = me(); if (u2) { if (window.__ttRerender) window.__ttRerender(); }
       setTimeout(function () { var h = document.getElementById('knockHead'); if (h) h.textContent = say; }, 80);
       toast(k === 3 ? '‘별로’를 전했어요 · 노크방 사람들이 안부를 물어올 거예요' : '오늘 컨디션을 전했어요');
     } catch (e) { toast((e && e.message || '컨디션을 전하지 못했어요').replace(/^[A-Z_]+:\s*/, '')); }
@@ -117,7 +118,6 @@
     render();
     if (pung && 'MutationObserver' in window) new MutationObserver(render).observe(pung, { attributes: true, attributeFilter: ['class'] });
     setTimeout(seen, 3000);
-    setInterval(function () { var r = window.__ttRoom; if (r && r.id !== weekRoom) { week = {}; loadWeek(); } }, 2000);
   });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) { setTimeout(seen, 1500); loadWeek(); } });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { setTimeout(seen, 1500); } });
 })();
