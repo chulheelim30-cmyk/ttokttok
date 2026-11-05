@@ -18,7 +18,7 @@
   // 노크방 목록에 붙는 표시 (번들에서 불러요)
   window.__ttMoodTag = function (uid, isMe) {
     var m = (window.__ttMood || {})[uid] || (isMe ? myMood() : 0);
-    return m ? ' · ' + (m === 3 ? '<b style="color:' + COLORS[3] + '">' + NAMES[m] + '</b>' : NAMES[m]) : '';
+    return m ? ' <span style="display:inline-flex;vertical-align:-4px;margin-left:2px" title="오늘 컨디션: ' + NAMES[m] + '">' + FACES[m] + '</span>' + (m === 3 ? '<b style="color:' + COLORS[3] + ';margin-left:2px">별로</b>' : '') : '';
   };
   window.__ttSeenTag = function (mem) {
     if (!mem || !mem.last_seen_at) return '';
@@ -27,6 +27,33 @@
     var t = h < 1 ? '방금 전' : h < 24 ? Math.floor(h) + '시간 전' : Math.floor(h / 24) + '일 전';
     return '<div class="t3" style="margin-top:3px">앱은 ' + t + '에 열었어요</div>';
   };
+
+  // 이번 주 컨디션 7칸 (노크방 목록 이름 아래)
+  var week = {}, weekRoom = null, DOT = { 1: '#4caf6d', 2: '#b7bfcc', 3: '#e05a4a' };
+  function days7() { var o = []; for (var i = 6; i >= 0; i--) { o.push(new Date(Date.now() + 9 * 3600e3 - i * 864e5).toISOString().slice(0, 10)); } return o; }
+  window.__ttMoodWeek = function (uid) {
+    var w = week[uid]; if (!w) return '';
+    var d = days7();
+    return '<span style="display:inline-flex;gap:3px;margin-left:6px;vertical-align:1px" title="최근 7일 컨디션">' + d.map(function (x) {
+      var v = w[x];
+      var st = v === undefined ? 'background:transparent;border:1.5px solid #dfe3ea' : v === 0 ? 'background:#e8ecf2' : 'background:' + DOT[v];
+      return '<i style="width:8px;height:8px;border-radius:50%;display:inline-block;' + st + '"></i>';
+    }).join('') + '</span>';
+  };
+  async function loadWeek() {
+    var r = window.__ttRoom; if (!r || !window.__ttAuth) return;
+    try {
+      var t = await window.__ttAuth(), d = days7();
+      var res = await fetch('https://pbmocpzclvndlevuvfto.supabase.co/rest/v1/knocks?room_id=eq.' + r.id + '&day=gte.' + d[0] + '&select=user_id,day,mood',
+        { headers: { apikey: 'sb_publishable_H42uVMl_0JG6NwuWhczkXw_85g9oaPi', Authorization: 'Bearer ' + t } });
+      if (!res.ok) return;
+      var rows = await res.json(), next = {};
+      rows.forEach(function (x) { next[x.user_id] = next[x.user_id] || {}; next[x.user_id][x.day] = x.mood || 0; });
+      var changed = JSON.stringify(next) !== JSON.stringify(week);
+      week = next; weekRoom = r.id;
+      if (changed && window.__ttRerender) window.__ttRerender();
+    } catch (e) {}
+  }
 
   // 오늘 컨디션 고르기
   function box() {
@@ -54,10 +81,10 @@
       document.getElementById('moodEdit').onclick = function () { render.edit = true; render(); };
       return;
     }
-    b.innerHTML = '<div style="font-size:13.5px;color:#23324a;margin-bottom:6px">오늘 컨디션은? <span style="color:#8a94a6;font-size:12px">(안 골라도 괜찮아요)</span></div>' +
+    b.innerHTML = '<div style="font-size:15px;font-weight:800;color:#23324a;margin-bottom:8px">오늘 컨디션은 어때요? <span style="color:#8a94a6;font-size:12px;font-weight:500">(안 골라도 돼요)</span></div>' +
       '<div style="display:flex;gap:8px;justify-content:center">' + [1, 2, 3].map(function (k) {
         return '<button data-mood="' + k + '" style="display:inline-flex;align-items:center;gap:5px;border:1.5px solid ' + (m === k ? COLORS[k] : '#c9cfd8') +
-          ';background:#fff;border-radius:999px;padding:7px 13px;font:inherit;font-size:14px;color:#23324a">' + FACES[k] + NAMES[k] + '</button>';
+          ';background:#fff;border-radius:16px;padding:10px 6px;font:inherit;font-size:14.5px;font-weight:700;color:#23324a;flex:1;flex-direction:column;gap:4px">' + FACES[k].replace(/width="18" height="18"/, 'width="34" height="34"') + NAMES[k] + '</button>';
       }).join('') + '</div>';
     Array.prototype.forEach.call(b.querySelectorAll('button[data-mood]'), function (btn) {
       btn.onclick = function () { pick(+btn.getAttribute('data-mood')); };
@@ -70,6 +97,9 @@
       LS('tt-mood', JSON.stringify({ day: today(), mood: k }));
       var u = me(); if (u) { window.__ttMood = window.__ttMood || {}; window.__ttMood[u] = k; }
       render.edit = false; render();
+      var say = { 1: '좋다옹! 오늘도 반가워', 2: '그냥 그런 날도 있지', 3: '토닥토닥… 노크방에 알렸어' }[k];
+      var u2 = me(); if (u2) { week[u2] = week[u2] || {}; week[u2][today()] = k; if (window.__ttRerender) window.__ttRerender(); }
+      setTimeout(function () { var h = document.getElementById('knockHead'); if (h) h.textContent = say; }, 80);
       toast(k === 3 ? '‘별로’를 전했어요 · 노크방 사람들이 안부를 물어올 거예요' : '오늘 컨디션을 전했어요');
     } catch (e) { toast((e && e.message || '컨디션을 전하지 못했어요').replace(/^[A-Z_]+:\s*/, '')); }
   }
@@ -87,6 +117,7 @@
     render();
     if (pung && 'MutationObserver' in window) new MutationObserver(render).observe(pung, { attributes: true, attributeFilter: ['class'] });
     setTimeout(seen, 3000);
+    setInterval(function () { var r = window.__ttRoom; if (r && r.id !== weekRoom) { week = {}; loadWeek(); } }, 2000);
   });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(seen, 1500); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { setTimeout(seen, 1500); loadWeek(); } });
 })();
