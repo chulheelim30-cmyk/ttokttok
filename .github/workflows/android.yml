@@ -1,0 +1,36 @@
+name: android
+on:
+  push:
+    paths: ['android/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Android SDK 36
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+      - name: Build (unsigned release AAB + debug APK)
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon bundleRelease assembleDebug
+          mkdir -p ../out
+          cp app/build/outputs/bundle/release/*.aab ../out/ttokttok-unsigned.aab
+          cp app/build/outputs/apk/debug/*.apk ../out/ttokttok-test.apk
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-build-${{ github.run_number }}
+          name: 안드로이드 빌드 ${{ github.run_number }}
+          prerelease: true
+          body: |
+            ttokttok-test.apk: 갤럭시에 바로 설치해서 시험해 보는 파일 (테스트용 서명)
+            ttokttok-unsigned.aab: 플레이 스토어용 원본 (서명 전)
+          files: out/*
