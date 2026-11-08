@@ -19,7 +19,7 @@
 <script src="./back.js?v=2" defer></script>
 <script src="./push.js?v=1" defer></script>
 <script src="./mood.js?v=3" defer></script>
-<script src="./rooms.js?v=8" defer></script>
+<script src="./rooms.js?v=9" defer></script>
 <script src="./account.js?v=1" defer></script>
 <style>
 .pic-btn{display:block;width:100%;border:0;padding:0;margin-top:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 26px rgba(20,40,75,.16);font:inherit}
@@ -154,6 +154,7 @@ html,body{background:#ece6da;color:var(--ink)}
 .about-note a{color:#2a5fb5}
 .about-link{display:block;width:calc(100% - 32px);background:none;border:0;text-decoration:underline;color:#6a7a92;padding:10px 0}
 </style>
+<link rel="stylesheet" href="./theme.css?v=1">
 </head>
 <body>
 <div id="app">
@@ -162,6 +163,7 @@ html,body{background:#ece6da;color:var(--ink)}
 <section class="view" id="v-knock">
 <div class="day-line" id="dayLine"></div>
 <div class="top"><div class="logo"><span id="logoDrop"></span><svg class="paw-logo" viewBox="0 0 120 120" aria-hidden="true"><path d="M60 64 C80 64 94 78 92 94 C90 108 74 110 60 104 C46 110 30 108 28 94 C26 78 40 64 60 64 Z" fill="#ffb3c7" stroke="#23324a" stroke-width="7"/><path d="M30 26 C34 36 40 40 39 47 C38 54 28 55 26 48 C25 41 29 36 30 26 Z M52 12 C56 22 62 26 61 33 C60 40 50 41 48 34 C47 27 51 22 52 12 Z M74 12 C78 22 84 26 83 33 C82 40 72 41 70 34 C69 27 73 22 74 12 Z M94 26 C98 36 104 40 103 47 C102 54 92 55 90 48 C89 41 93 36 94 26 Z" fill="#bfe3ff" stroke="#23324a" stroke-width="6"/></svg>또옥또옥</div><button class="chip" onclick="openRooms()"><span id="roomName">우리 가족 노크방</span> ▾<i id="roomDot"></i></button></div>
+<h1 class="hello">오늘 안부, 똑똑 전해 볼까요?<small>그림을 두 번 두드리면 마음이 전해져요</small></h1>
 <div class="card polaroid" id="polaroid"><i class="tape t1a"></i><i class="tape t2a"></i><div class="ok-stamp" aria-hidden="true"><svg viewBox="0 0 120 120"><path d="M60 64 C80 64 94 78 92 94 C90 108 74 110 60 104 C46 110 30 108 28 94 C26 78 40 64 60 64 Z" fill="#ff8fa8"/><path d="M30 26 C34 36 40 40 39 47 C38 54 28 55 26 48 C25 41 29 36 30 26 Z M52 12 C56 22 62 26 61 33 C60 40 50 41 48 34 C47 27 51 22 52 12 Z M74 12 C78 22 84 26 83 33 C82 40 72 41 70 34 C69 27 73 22 74 12 Z M94 26 C98 36 104 40 103 47 C102 54 92 55 90 48 C89 41 93 36 94 26 Z" fill="#ff8fa8"/></svg><span>또옥!</span></div>
 <div class="row"><div><div class="t1" id="picTitle">1번째 우리 그림</div><div class="t2" id="picSub">협업 작가 · 「은행잎 지는 저녁」</div></div><div class="sp"></div><div class="t1" style="color:var(--blue);display:none" id="picCount">0/30</div></div>
 <div class="bar" style="display:none"><i id="picBar" style="width:0"></i></div>

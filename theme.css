@@ -1,0 +1,35 @@
+/* 또옥또옥 테마 v1 — Gemini 첫 화면 느낌 (이 파일 링크를 지우면 원래 디자인) */
+:root{--bg:transparent;--line:#edf0f6;--grad:linear-gradient(90deg,#3b7bf6 0%,#8a6cf0 55%,#e9719f 100%)}
+html,body{background:#eef2f9}
+#app{background:linear-gradient(180deg,#fff 0%,#fff 50%,#f1f5ff 72%,#ece9ff 88%,#fdeef4 100%)}
+#app::after{content:"";position:absolute;left:-20%;right:-20%;bottom:-120px;height:320px;pointer-events:none;z-index:0;
+ background:radial-gradient(closest-side,rgba(120,160,255,.28),rgba(170,140,255,.14) 55%,transparent)}
+.view,.nav{z-index:1}
+/* 인사말 */
+.day-line{text-align:center;font-size:13px;font-weight:600;color:#8a93a6;letter-spacing:.2px;padding-top:14px}
+.hello{margin:6px 22px 4px;text-align:center;font-size:25px;line-height:1.35;font-weight:700;letter-spacing:-.4px;
+ background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hello small{display:block;margin-top:4px;font-size:14px;font-weight:500;letter-spacing:0;color:#7b8498;-webkit-text-fill-color:#7b8498}
+.top .logo{font-size:17px;font-weight:700}
+.top .chip{background:#fff;border:1px solid #e3e8f2;color:#3a4458;box-shadow:0 1px 4px rgba(40,60,110,.06)}
+/* 그림 카드: 기울기·테이프 없이 반듯하게 */
+.polaroid{transform:none;margin:14px 18px 6px;padding:12px;border-radius:28px;border:1px solid var(--line);
+ box-shadow:0 10px 30px rgba(60,90,160,.10)}
+.polaroid .tape{display:none}
+.polaroid .pic-btn,.board{border-radius:20px}
+.pic-chip{background:rgba(255,255,255,.88);color:#2a3550;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+/* 일반 카드 */
+.card{border-radius:24px;border:1px solid var(--line);box-shadow:0 4px 18px rgba(60,90,160,.07)}
+/* 풍년이 말풍선 */
+.pung-say.knock-head{border:1px solid #e3e8f2!important;border-radius:22px!important;box-shadow:0 4px 14px rgba(60,90,160,.08)}
+.cap{color:#6b7488}
+/* 칩: 알약 */
+.chips .chip{background:#fff;border:1px solid #e3e8f2;color:#3a4458;font-weight:600;padding:7px 13px}
+.chips .chip.g{color:#1e7d4f}
+/* 아래 메뉴: 떠 있는 알약 */
+.view{bottom:calc(86px + var(--safe-b))}
+.nav{left:14px;right:14px;bottom:calc(12px + var(--safe-b));height:62px;padding-bottom:0;border:1px solid #e6eaf3;border-radius:31px;
+ background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(60,90,160,.14)}
+.nav button{border-radius:24px;margin:0 4px;font-weight:600}
+.nav button.on{color:#3b5bdb;background:linear-gradient(135deg,rgba(59,123,246,.10),rgba(233,113,159,.10))}
+.about-link{color:#8a93a6;text-decoration:none}

@@ -156,7 +156,7 @@
 // - 구성원: 노크방에 들어갈 때 별명과 함께 실명(선택)을 적어요. '노크방 관리'에서 언제든 바꾸거나 지울 수 있어요.
 // - 방장: 노크방 목록과 관리 화면에서 별명 옆에 실명이 보여요.
 (function () {
-  var names = {}, loadedRoom = null;
+  var names = {}, loadedRoom = null, shown = {}, pickShow = false;
   function LS(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function toast(t) { var e = document.getElementById('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { e.classList.remove('on'); }, 2600); }
@@ -168,8 +168,18 @@
     return n ? '<span style="font-weight:600;color:#5a6577;font-size:12.5px;margin-left:6px">(' + esc(n) + ')</span>' : '';
   };
 
+  // 본인이 '실명으로 보이기'를 고른 사람은 다른 구성원에게 실명으로 보여요 (방장은 별명+실명 함께)
+  window.__ttDispName = function (uid, nick) { if (isOwner()) return nick; return shown[uid] || nick; };
+  async function loadShown(r) {
+    try {
+      var sr = await window.__ttRpc('room_shown_names', { p_room: r.id });
+      var ns = {}; (sr || []).forEach(function (x) { if (x.shown_name) ns[x.user_id] = x.shown_name; });
+      if (JSON.stringify(ns) !== JSON.stringify(shown)) { shown = ns; window.__ttRerender && window.__ttRerender(); }
+    } catch (e) {}
+  }
   async function loadOwnerNames() {
     var r = room(); if (!r || !window.__ttRpc) return;
+    loadShown(r);
     if (!isOwner()) { if (Object.keys(names).length) { names = {}; window.__ttRerender && window.__ttRerender(); } loadedRoom = r.id; return; }
     try {
       var rows = await window.__ttRpc('room_real_names', { p_room: r.id });
@@ -186,39 +196,53 @@
     if (!s) {
       s = document.createElement('div'); s.className = 'sheet'; s.id = 'realSheet';
       s.innerHTML = '<div class="dim" data-x></div><div class="pan"><div class="grab"></div>' +
-        '<div class="top"><div class="logo" style="font-size:18px">방장에게 실명 알려 주기</div></div>' +
+        '<div class="top"><div class="logo" style="font-size:18px">실명 등록하기</div></div>' +
         '<div style="padding:0 18px"><div class="t2" style="line-height:1.7" id="realLead"></div>' +
         '<input class="inp" id="realInput" maxlength="20" autocomplete="name" placeholder="예: 홍길동" style="margin-top:12px">' +
-        '<button class="btn bp" style="margin-top:12px" id="realSave">알려 주기</button>' +
-        '<button class="btn bw" style="margin-top:8px" data-x>안 알려 줄래요</button>' +
-        '<div class="t3" style="text-align:center;margin-top:8px">방장에게만 보여요 · 노크방 관리에서 언제든 지울 수 있어요</div></div></div>';
+        '<div class="t3" style="margin:14px 0 6px">다른 구성원에게 보일 이름</div>' +
+        '<div id="realShowSeg" style="display:flex;gap:8px"><button class="btn bw" data-s="0" style="flex:1;margin:0">별명으로</button><button class="btn bw" data-s="1" style="flex:1;margin:0">실명으로</button></div>' +
+        '<button class="btn bp" style="margin-top:14px" id="realSave">저장하기</button>' +
+        '<button class="btn bw" style="margin-top:8px" data-x>다음에 할게요</button>' +
+        '<div class="t3" style="text-align:center;margin-top:8px">방장에게는 별명과 실명이 함께 보여요 · 노크방 관리에서 언제든 바꿀 수 있어요</div></div></div>';
       document.body.appendChild(s);
       Array.prototype.forEach.call(s.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { s.classList.remove('on'); }; });
       document.getElementById('realSave').onclick = save;
+      Array.prototype.forEach.call(s.querySelectorAll('#realShowSeg button'), function (b) { b.onclick = function () { setPick(b.getAttribute('data-s') === '1'); }; });
     }
     var r = room();
-    document.getElementById('realLead').innerHTML = '‘' + esc(r && r.name || '노크방') + '’ 방장에게만 보이는 실명이에요.<br><span class="t3">다른 구성원에게는 별명만 보여요. 안 적어도 괜찮아요.</span>';
+    document.getElementById('realLead').innerHTML = '‘' + esc(r && r.name || '노크방') + '’ 노크방에 실명을 등록해 주세요.<br><span class="t3">방장은 별명과 실명을 함께 보고, 다른 구성원에게는 아래에서 고른 이름이 보여요.</span>';
     document.getElementById('realInput').value = mine || '';
+    var me = window.__ttMe && window.__ttMe(); setPick(!!(me && shown[me]));
     s.classList.add('on');
+  }
+  function setPick(v) {
+    pickShow = v;
+    Array.prototype.forEach.call(document.querySelectorAll('#realShowSeg button'), function (b) {
+      var on = (b.getAttribute('data-s') === '1') === v;
+      b.style.background = on ? '#1f5fa8' : ''; b.style.color = on ? '#fff' : '';
+    });
   }
   async function save() {
     var r = room(); if (!r) return;
     var v = document.getElementById('realInput').value.trim();
     try {
+      if (pickShow && !v) { toast('실명으로 보이려면 실명을 적어 주세요'); return; }
       await window.__ttRpc('set_real_name', { p_room: r.id, p_name: v });
+      await window.__ttRpc('set_shown_name', { p_room: r.id, p_name: pickShow ? v : null });
       document.getElementById('realSheet').classList.remove('on');
-      toast(v ? '방장에게만 실명을 알려 줬어요' : '실명을 지웠어요');
-      var t = document.getElementById('realMineTxt'); if (t) t.textContent = v ? v + ' · 방장에게만 보여요' : '알려 주지 않았어요';
+      toast(v ? (pickShow ? '구성원에게 실명으로 보여요' : '구성원에게 별명으로 보여요') : '실명을 지웠어요');
+      var t = document.getElementById('realMineTxt'); if (t) t.textContent = mineTxt(v, pickShow);
+      loadOwnerNames();
     } catch (e) { toast((e && e.message || '저장하지 못했어요').replace(/^[A-Z_]+:\s*/, '')); }
   }
   async function maybeAsk() {
-    var r = room(); if (!r || isOwner() || !window.__ttRpc) return;
-    var key = 'tt-real-asked-' + r.id;
+    var r = room(); if (!r || !window.__ttRpc) return;
+    var key = 'tt-real-asked2-' + r.id;
     if (LS(key)) return;
     try {
       var mine = await window.__ttRpc('my_real_name', { p_room: r.id });
       LS(key, '1');
-      if (!mine) askSheet('');
+      await loadShown(r); askSheet(mine || '');
     } catch (e) {}
   }
 
@@ -226,18 +250,20 @@
   function manageRow() {
     var r = room(); var owner = document.getElementById('ownerBox'); if (!r || !owner) return;
     var box = document.getElementById('realMine');
-    if (isOwner()) { if (box) box.style.display = 'none'; return; }
     if (!box) {
       box = document.createElement('div'); box.id = 'realMine';
-      box.innerHTML = '<div class="sec">방장에게 보이는 내 실명</div><div class="row" style="gap:8px"><div class="t3" style="flex:1" id="realMineTxt">불러오는 중…</div><button class="mini bs" id="realMineBtn">바꾸기</button></div>';
+      box.innerHTML = '<div class="sec">내 실명 · 보이는 이름</div><div class="row" style="gap:8px"><div class="t3" style="flex:1" id="realMineTxt">불러오는 중…</div><button class="mini bs" id="realMineBtn">바꾸기</button></div>';
       owner.parentNode.insertBefore(box, owner.nextSibling);
     }
     box.style.display = '';
     window.__ttRpc('my_real_name', { p_room: r.id }).then(function (v) {
-      document.getElementById('realMineTxt').textContent = v ? v + ' · 방장에게만 보여요' : '알려 주지 않았어요';
+      var me = window.__ttMe && window.__ttMe();
+      document.getElementById('realMineTxt').textContent = mineTxt(v, !!(me && shown[me]));
       document.getElementById('realMineBtn').onclick = function () { askSheet(v || ''); };
     }).catch(function () {});
   }
+
+  function mineTxt(v, sh) { return v ? v + ' · 구성원에게 ' + (sh ? '실명' : '별명') + '으로 보여요' : '아직 등록하지 않았어요'; }
 
   // 입장할 때 적은 실명을 들어간 방에 저장해요
   var pending = '';
@@ -285,7 +311,7 @@
     var last = null;
     setInterval(function () {
       var r = room(); if (!r) return;
-      if (r.id !== last) { last = r.id; names = {}; loadOwnerNames(); }
+      if (r.id !== last) { last = r.id; names = {}; shown = {}; loadOwnerNames(); setTimeout(maybeAsk, 1200); }
     }, 1500);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) loadOwnerNames(); });
   });
