@@ -9,20 +9,21 @@
     '.tt-anim>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}' +
     '.tt-breath{animation:ttBreath 5s cubic-bezier(.45,0,.55,1) infinite alternate}' +
     '.tt-eyes{position:absolute}' +
-    '.tt-eyes img{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0}' +
+    '.tt-eyes img{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity 28ms linear}' +
     '@keyframes ttBreath{from{transform:none}to{transform:scale(1.004,1.011)}}';
   document.head.appendChild(css);
   function num(src) { var m = /\/art\/g(\d\d)\.webp/.exec(src || ''); return m ? +m[1] : 0; }
-  function blinkLoop(box, half, closed) {
+  // 눈꺼풀이 내려왔다(빠르게) 올라가요(조금 천천히): 뜬 눈 → 1/3 → 2/3 → 감음 → 2/3 → 1/3 → 뜬 눈
+  function blinkLoop(box, fr) {
+    function show(k) { for (var j = 0; j < fr.length; j++) fr[j].style.opacity = j === k ? 1 : 0; }
     function step() {
       if (!box.isConnected) return;
-      var slow = Math.random() < 0.18, hold = slow ? 380 : 110;
-      half.style.opacity = 1;
-      setTimeout(function () { closed.style.opacity = 1; }, 60);
-      setTimeout(function () { closed.style.opacity = 0; }, 60 + hold);
-      setTimeout(function () { half.style.opacity = 0; }, 120 + hold);
+      var slow = Math.random() < 0.18, hold = slow ? 420 : 90, t = 0;
+      [[0, 0], [1, 35], [2, 35]].forEach(function (a) { t += a[1]; setTimeout(function () { show(a[0]); }, t); });
+      t += hold;
+      [[1, 0], [0, slow ? 90 : 55], [-1, slow ? 90 : 55]].forEach(function (a) { t += a[1]; setTimeout(function () { show(a[0]); }, t); });
       var next = 3000 + Math.random() * 3000;
-      if (!slow && Math.random() < 0.2) next = 380; // 가끔 두 번 연달아
+      if (!slow && Math.random() < 0.2) next = t + 260; // 가끔 두 번 연달아
       setTimeout(step, next);
     }
     setTimeout(step, 800 + Math.random() * 2500);
@@ -48,10 +49,11 @@
         w.className += ' tt-breath'; w.style.animationDuration = dur;
         w.style.transformOrigin = ((ox - e[0]) / e[2] * 100) + '% ' + ((oy - e[1]) / e[3] * 100) + '%';
       }
-      var p = './art/blink/g' + (n < 10 ? '0' : '') + n, half = new Image(), closed = new Image();
-      half.src = p + '-half.webp?v=2'; closed.src = p + '-closed.webp?v=2'; half.alt = closed.alt = '';
-      w.appendChild(half); w.appendChild(closed); box.appendChild(w);
-      blinkLoop(box, half, closed);
+      var p = './art/blink/g' + (n < 10 ? '0' : '') + n, fr = ['q', 'half', 'closed'].map(function (k) {
+        var x = new Image(); x.src = p + '-' + k + '.webp?v=3'; x.alt = ''; w.appendChild(x); return x;
+      });
+      box.appendChild(w);
+      blinkLoop(box, fr);
     }
     img.parentNode.insertBefore(box, img.nextSibling);
   }
