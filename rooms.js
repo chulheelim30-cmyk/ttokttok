@@ -19,17 +19,18 @@
   };
 
   // 방 종류 + 인원 고르는 칸 (만들기와 관리에서 같이 써요)
-  function picker(prefix, type, max, min) {
+  function picker(prefix, type, max, min, fold) {
+    var range = '<div class="sec" style="margin-top:14px">참여 인원 <span id="' + prefix + 'MaxTxt" style="color:#14284b">' + max + '명</span></div>' +
+      '<input type="range" min="' + (min || 2) + '" max="30" step="1" value="' + max + '" id="' + prefix + 'Max" style="width:100%">' +
+      '<div class="row t3"><span>' + (min || 2) + '명</span><div class="sp"></div><span>30명</span></div>';
+    if (fold) range = '<details id="' + prefix + 'More"' + (fold === 'open' ? ' open' : '') + ' style="margin-top:10px"><summary class="t3" style="cursor:pointer">인원 직접 정하기 (지금 ' + max + '명)</summary>' + range + '</details>';
     return '<div class="sec" style="margin-top:14px">방 종류</div>' +
       '<div style="display:flex;gap:8px" id="' + prefix + 'Types">' + ORDER.map(function (k) {
         return '<button type="button" data-type="' + k + '" style="flex:1;border:1.5px solid ' + (k === type ? '#14284b' : '#c9cfd8') +
           ';background:' + (k === type ? '#14284b' : '#fff') + ';color:' + (k === type ? '#fff' : '#23324a') +
           ';border-radius:12px;padding:10px 4px;font:inherit;font-size:14px;font-weight:700">' + TYPES[k].name + '</button>';
       }).join('') + '</div>' +
-      '<div class="t3" style="margin-top:6px" id="' + prefix + 'Desc">' + esc(TYPES[type].desc) + '</div>' +
-      '<div class="sec" style="margin-top:14px">참여 인원 <span id="' + prefix + 'MaxTxt" style="color:#14284b">' + max + '명</span></div>' +
-      '<input type="range" min="' + (min || 2) + '" max="30" step="1" value="' + max + '" id="' + prefix + 'Max" style="width:100%">' +
-      '<div class="row t3"><span>' + (min || 2) + '명</span><div class="sp"></div><span>30명</span></div>';
+      '<div class="t3" style="margin-top:6px" id="' + prefix + 'Desc">' + esc(TYPES[type].desc) + '</div>' + range;
   }
   function wire(prefix, state, onChange) {
     var types = document.getElementById(prefix + 'Types'), range = document.getElementById(prefix + 'Max');
@@ -55,10 +56,36 @@
       box = document.createElement('div'); box.id = 'createExtra';
       input.parentNode.insertBefore(box, input.nextSibling);
     }
-    box.innerHTML = picker('cr', create.type, create.max);
+    var input = document.getElementById('roomNameInput');
+    // 한 번 누르면 이름 + 방 종류가 같이 정해지는 추천 칩
+    var chips = document.getElementById('createChips');
+    if (!chips && input) {
+      chips = document.createElement('div'); chips.id = 'createChips';
+      chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px';
+      input.parentNode.insertBefore(chips, input);
+      input.onkeydown = function (e) { if (e.key === 'Enter' && window.submitCreate) { e.preventDefault(); window.submitCreate(); } };
+    }
+    if (chips) {
+      chips.innerHTML = QUICK.map(function (q, i) {
+        var on = input && input.value === q.t;
+        return '<button type="button" data-i="' + i + '" style="border:1.5px solid ' + (on ? '#14284b' : '#c9cfd8') + ';background:' + (on ? '#14284b' : '#fff') + ';color:' + (on ? '#fff' : '#23324a') + ';border-radius:999px;padding:7px 12px;font:inherit;font-size:13.5px;font-weight:700">' + esc(q.t) + '</button>';
+      }).join('');
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        b.onclick = function () {
+          var q = QUICK[+b.getAttribute('data-i')];
+          if (input) input.value = q.t;
+          create.type = q.k;
+          if (create.autoMax) create.max = TYPES[q.k].max;
+          renderCreate();
+        };
+      });
+    }
+    var more = document.getElementById('crMore');
+    box.innerHTML = picker('cr', create.type, create.max, 2, more && more.open ? 'open' : 1);
     wire('cr', create, renderCreate);
     create.onSync();
   }
+  var QUICK = [{ t: '우리 가족', k: 'family' }, { t: '친구들', k: 'crew' }, { t: '러닝 크루', k: 'crew' }, { t: '대학 동기', k: 'group' }, { t: '동네 모임', k: 'group' }];
 
   // 노크방 관리 (방장)
   var manage = {};
@@ -262,4 +289,34 @@
     }, 1500);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) loadOwnerNames(); });
   });
+})();
+
+// 그림 완성 순간: 완성된 그림이 2~3초 동안 번쩍이며 움직이고, 모든 칸이 열렸다고 알려 줘요
+(function () {
+  var css = '#ttCel{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,20,40,.88);animation:ttCelIn .25s ease-out}' +
+    '#ttCel .fr{position:relative;width:min(82vw,380px);aspect-ratio:1;border-radius:18px;overflow:hidden;box-shadow:0 0 0 3px #ffd34d,0 10px 40px rgba(255,211,77,.45)}' +
+    '#ttCel .tt-cel-img{width:100%;height:100%;object-fit:cover;animation:ttCelMove 2.8s ease-in-out forwards}' +
+    '#ttCel .fl{position:absolute;inset:0;background:#fff;animation:ttCelFlash .7s ease-out forwards;pointer-events:none}' +
+    '#ttCel .sh{position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%);animation:ttCelShine 1.4s .5s ease-in-out 2;pointer-events:none}' +
+    '#ttCel .tx{color:#fff;font-weight:800;font-size:20px;margin-top:20px;text-align:center;line-height:1.5}' +
+    '#ttCel .tx small{display:block;font-size:13.5px;font-weight:600;color:#ffd34d}' +
+    '#ttCel.out{animation:ttCelOut .4s ease-in forwards}' +
+    '@keyframes ttCelIn{from{opacity:0}to{opacity:1}}@keyframes ttCelOut{to{opacity:0}}' +
+    '@keyframes ttCelFlash{0%{opacity:.95}100%{opacity:0}}' +
+    '@keyframes ttCelShine{to{transform:translateX(120%)}}' +
+    '@keyframes ttCelMove{0%{transform:scale(1)}35%{transform:scale(1.1) rotate(-1.5deg)}70%{transform:scale(1.14) translate(2%,-2%) rotate(1deg)}100%{transform:scale(1.06)}}' +
+    '@media (prefers-reduced-motion:reduce){#ttCel *{animation:none!important}}';
+  var busy = false;
+  window.__ttCelebrate = function (artHtml, no) {
+    if (busy) return; busy = true;
+    if (!document.getElementById('ttCelCss')) { var st = document.createElement('style'); st.id = 'ttCelCss'; st.textContent = css; document.head.appendChild(st); }
+    var d = document.createElement('div'); d.id = 'ttCel';
+    d.innerHTML = '<div class="fr">' + artHtml + '<div class="sh"></div><div class="fl"></div></div>' +
+      '<div class="tx">모든 칸이 열렸어요!<small>노크방이 함께 완성한 ' + no + '번째 그림이에요</small></div>';
+    d.onclick = done;
+    document.body.appendChild(d);
+    if (navigator.vibrate) try { navigator.vibrate([40, 40, 40, 40, 80]); } catch (e) {}
+    var h = setTimeout(done, 2800);
+    function done() { clearTimeout(h); d.classList.add('out'); setTimeout(function () { d.remove(); busy = false; }, 400); }
+  };
 })();
