@@ -410,8 +410,13 @@
 
 // 업데이트 소식: 새 버전이면 한 번 보여 주고, 설정에서 언제든 다시 볼 수 있어요
 (function () {
-  var VER = '베타4';
+  var VER = '베타4.1';
   var NOTES = [
+    { v: '베타4.1', d: '2026.11.08', items: [
+      '개인정보 처리방침 보완: 실명과 마지막 접속 시각이 누구에게 보이는지 정확히 안내해요',
+      '초대 링크를 보내면 풍년이 그림과 앱 소개가 미리보기로 보여요',
+      '앱이 조금 더 가벼워졌어요'
+    ] },
     { v: '베타4 업그레이드 완료', d: '2026.11.08', items: [
       "노크·접속 시간이 '28시간 전'처럼 시간으로 보여요",
       '설정 › 내 이름에서 실명도 함께 등록해요',
@@ -526,4 +531,45 @@ window.__ttSeenLine = function (m, isMe) {
     var at = window.albumTap;
     if (typeof at === 'function') window.albumTap = function () { var x = at.apply(this, arguments); sync(); return x; };
   });
+})();
+
+// 운영자(방장)에게만: Claude 점검 보고를 한 번 띄워요 (설정의 운영자 카드가 보이는 기기에서만)
+(function () {
+  var ID = 'tt-op-report-20261108b';
+  var ITEMS = [
+    ['바꾼 것', [
+      '개인정보 처리방침: 실명(설정에서 필수·실명으로 보이기 선택), 마지막 접속 시각·컨디션 공개 범위를 실제 기능에 맞게 고쳤어요',
+      '초대 링크를 카카오톡 등에 보내면 풍년이 그림과 앱 소개가 미리보기로 보여요',
+      '안 쓰는 그림을 오프라인 저장에서 빼서 첫 설치가 약 1.1MB 가벼워졌어요',
+      '그림첩에 AI 영상(무료·상업적 사용 가능한 Wan 2.2)을 넣을 수 있게 준비했어요',
+      '휴대폰·PC 화면에서 오류와 가로 밀림이 없는지 자동 점검했어요 (문제 없음)'
+    ]],
+    ['방장님이 확인할 것', [
+      '‘베타테스트v0.2’ 방: 박박·채영·윤·임경희 님이 4일째 노크도 접속도 없어요. 안부 알림이 실제로 갔는지 확인해 주세요',
+      '알림을 끈 구성원을 방장에게 보여 주는 기능은 서버(Supabase) 작업이 필요해요',
+      'AI 영상: 허깅페이스 무료 GPU 한도가 다 써서 다시 차면 이어서 만들어요',
+      '자세한 내용은 Claude 대화의 ‘톡톡 경쟁 앱 분석과 수정 제안’ 문서에 있어요'
+    ]]
+  ];
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function show() {
+    var s = document.createElement('div'); s.className = 'sheet on'; s.id = 'opReportSheet';
+    s.innerHTML = '<div class="dim" data-x></div><div class="pan"><div class="grab"></div>' +
+      '<div class="top"><div class="logo" style="font-size:18px">Claude 점검 보고</div><div class="sp"></div><span class="chip y">방장만 보여요</span></div>' +
+      '<div style="padding:0 18px">' + ITEMS.map(function (g) {
+        return '<div class="sec" style="margin-top:6px">' + esc(g[0]) + '</div><div class="t2" style="line-height:1.75">' +
+          g[1].map(function (i) { return '· ' + esc(i); }).join('<br>') + '</div>';
+      }).join('') + '<button class="btn bp" style="margin-top:14px" data-x>확인했어요</button></div></div>';
+    (document.getElementById('app') || document.body).appendChild(s);
+    Array.prototype.forEach.call(s.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { s.classList.remove('on'); }; });
+    try { localStorage.setItem(ID, '1'); } catch (e) {}
+  }
+  var tries = 0, t = setInterval(function () {
+    tries++;
+    var c = document.getElementById('opCard');
+    var seen = null; try { seen = localStorage.getItem(ID); } catch (e) {}
+    if (seen) return clearInterval(t);
+    if (c && c.style.display && c.style.display !== 'none' && !document.querySelector('.sheet.on')) { clearInterval(t); show(); }
+    if (tries > 40) clearInterval(t);
+  }, 1500);
 })();
