@@ -24,8 +24,8 @@ def twaManifest = [
     applicationId: 'kr.ttokttok.app',
     hostName: 'chulheelim30-cmyk.github.io', // The domain being opened in the TWA.
     launchUrl: '/ttokttok/?src=play', // The start path for the TWA. Must be relative to the domain.
-    name: '또옥또옥', // The application name.
-    launcherName: '또옥또옥', // The name shown on the Android Launcher.
+    name: '톡톡', // The application name.
+    launcherName: '톡톡', // The name shown on the Android Launcher.
     themeColor: '#14284B', // The color used for the status bar.
     themeColorDark: '#14284B', // The color used for the dark status bar.
     navigationColor: '#FBF8F2', // The color used for the navigation bar.

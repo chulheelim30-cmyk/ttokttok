@@ -1,4 +1,4 @@
-// 또옥또옥 '내 기록 모두 지우기(탈퇴)'
+// 톡톡 '내 기록 모두 지우기(탈퇴)'
 // 설정 맨 아래 버튼 → 안내 창 → 한 번 더 눌러야 지워져요.
 (function () {
   var FN = 'https://pbmocpzclvndlevuvfto.supabase.co/functions/v1/account';

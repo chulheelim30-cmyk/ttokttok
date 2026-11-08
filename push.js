@@ -1,4 +1,4 @@
-// 또옥또옥 휴대폰 알림 (웹 푸시)
+// 톡톡 휴대폰 알림 (웹 푸시)
 // 켜 두면: 가까운 사람의 노크가 기준 시간 넘게 멈출 때, 콕 찔렸을 때, 저녁 8시까지 노크를 안 했을 때 알려 줘요.
 (function () {
   var FN = 'https://pbmocpzclvndlevuvfto.supabase.co/functions/v1/push';
@@ -75,7 +75,7 @@
     btn.style.display = '';
     var on = Notification.permission === 'granted' && !!(await currentSub());
     if (Notification.permission === 'denied') {
-      txt.textContent = '알림이 막혀 있어요 · 휴대폰 설정 → 애플리케이션 → 크롬(또는 또옥또옥) → 알림에서 허용해 주세요';
+      txt.textContent = '알림이 막혀 있어요 · 휴대폰 설정 → 애플리케이션 → 크롬(또는 톡톡) → 알림에서 허용해 주세요';
       btn.style.display = 'none'; tb.style.display = 'none'; return;
     }
     txt.textContent = on ? '켜짐 · 노크가 멈추거나 콕 찔리면 이 휴대폰으로 알려요' : '꺼짐 · 켜면 가까운 사람 노크가 멈출 때 바로 알 수 있어요';

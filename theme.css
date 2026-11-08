@@ -1,4 +1,4 @@
-/* 또옥또옥 테마 v1 — Gemini 첫 화면 느낌 (이 파일 링크를 지우면 원래 디자인) */
+/* 톡톡 테마 v1 — Gemini 첫 화면 느낌 (이 파일 링크를 지우면 원래 디자인) */
 :root{--bg:transparent;--line:#edf0f6;--grad:linear-gradient(90deg,#3b7bf6 0%,#8a6cf0 55%,#e9719f 100%)}
 html,body{background:#eef2f9}
 #app{background:linear-gradient(180deg,#fff 0%,#fff 50%,#f1f5ff 72%,#ece9ff 88%,#fdeef4 100%)}
@@ -33,3 +33,8 @@ html,body{background:#eef2f9}
 .nav button{border-radius:24px;margin:0 4px;font-weight:600}
 .nav button.on{color:#3b5bdb;background:linear-gradient(135deg,rgba(59,123,246,.10),rgba(233,113,159,.10))}
 .about-link{color:#8a93a6;text-decoration:none}
+
+/* 풍년이 그림: 열릴 때 3초 움직임 */
+img.art[src*="/art/g"]{animation:pungIn 3s ease-out both;transform-origin:50% 60%}
+@keyframes pungIn{0%{transform:scale(1.14) translateY(3%) rotate(-1deg);filter:brightness(1.12) saturate(.85)}35%{transform:scale(1.06) translateY(-1%) rotate(.6deg)}70%{transform:scale(1.02) rotate(-.3deg)}100%{transform:none;filter:none}}
+@media (prefers-reduced-motion:reduce){img.art[src*="/art/g"]{animation:none}}
