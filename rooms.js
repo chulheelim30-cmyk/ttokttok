@@ -638,6 +638,18 @@ window.__ttSeenLine = function (m, isMe) {
     sh.classList.add('on');
   }
   window.ttOpenAdmins = openSheet;
+  // 노크방 관리의 ‘내보내기’ 옆 버튼
+  window.ttToggleAdmin = function (uid) {
+    var r = room(); if (!r || !isCreator()) return;
+    var on = !admins[uid];
+    if (on && Object.keys(admins).length >= MAX) { toast('관리자는 ' + MAX + '명까지 정할 수 있어요'); return; }
+    window.__ttRpc('set_room_admin', { p_room: r.id, p_user: uid, p_on: on }).then(function () {
+      toast(on ? '관리자로 정했어요' : '관리자에서 뺐어요'); return load();
+    }).then(function () { if (window.openManage) window.openManage(); }).catch(function (e) {
+      var m = (e && e.message || '').replace(/^[A-Z_]+:\s*/, '');
+      toast(/function|schema|find|404/i.test(m) ? '관리자 기능을 서버에 준비 중이에요' : (m || '바꾸지 못했어요'));
+    });
+  };
   // 노크방 페이지: 처음 만든 사람에게만 ‘방장 추가’ 버튼
   function pageBtn() {
     var anchor = document.getElementById('members'); if (!anchor) return;
@@ -653,7 +665,7 @@ window.__ttSeenLine = function (m, isMe) {
   window.addEventListener('load', function () {
     setInterval(pageBtn, 1500);
     var om = window.openManage;
-    if (typeof om === 'function') window.openManage = function () { var x = om.apply(this, arguments); load().then(section); section(); return x; };
+    if (typeof om === 'function') window.openManage = function () { var x = om.apply(this, arguments); load(); return x; };
     setInterval(function () { var r = room(); if (r && r.id !== last) { last = r.id; admins = {}; load(); } }, 1500);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
   });
