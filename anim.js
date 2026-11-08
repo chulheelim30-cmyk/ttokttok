@@ -72,9 +72,12 @@
     for (var i = 0; i < list.length; i++) {
       var img = list[i];
       if (img.closest('.th.blur') || img.closest('.tt-anim') || img.classList.contains('pv-blur')) continue;
+      // 노크 화면 그림은 30칸이 다 열려 완성됐을 때만 움직여요 (그 전엔 멈춰 있는 그림)
+      if (img.closest('#board') && (window.__ttOpenedCount ? window.__ttOpenedCount() : 0) < 30) continue;
       add(img);
     }
   }
+  window.__ttAnimScan = scan;
   var t = null;
   new MutationObserver(function () { clearTimeout(t); t = setTimeout(scan, 60); }).observe(document.documentElement, { childList: true, subtree: true });
   window.addEventListener('load', scan);

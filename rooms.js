@@ -578,7 +578,7 @@ window.__ttSeenLine = function (m, isMe) {
 
 // 노크방 관리자: 방장(처음 만든 사람)이 구성원 중 최대 3명을 관리자로 정해요. 관리자는 앱에서 방장과 같은 일을 해요.
 (function () {
-  var admins = {}, last = null, MAX = 3;
+  var admins = {}, last = null, MAX = 2;
   function room() { return window.__ttRoom || null; }
   function me() { return window.__ttMe && window.__ttMe(); }
   function isCreator() { var r = room(); return !!(r && r.created_by === me()); }
@@ -605,7 +605,7 @@ window.__ttSeenLine = function (m, isMe) {
     box.style.display = '';
     var list = (window.__ttMembers ? window.__ttMembers() : []).filter(function (m) { return m.user_id !== me(); });
     var n = Object.keys(admins).length;
-    box.innerHTML = '<div class="sec">관리자 · ' + n + '/' + MAX + '명</div><div class="t3" style="margin:-4px 0 8px">관리자는 방장과 같이 방 이름·설정 바꾸기, 실명 보기, 내보내기를 할 수 있어요</div>' +
+    box.innerHTML = '<div class="sec">관리자 · 방장 포함 ' + (n + 1) + '/' + (MAX + 1) + '명</div><div class="t3" style="margin:-4px 0 8px">관리자는 방장과 같이 방 이름·설정 바꾸기, 실명 보기, 내보내기를 할 수 있어요</div>' +
       '<div class="card" style="margin:0;padding:4px 14px">' + (list.length ? list.map(function (m) {
         var on = !!admins[m.user_id];
         return '<div class="mem"><div class="t1" style="font-size:14px">' + esc(m.name) + '</div><div class="sp"></div>' +
@@ -614,7 +614,7 @@ window.__ttSeenLine = function (m, isMe) {
     Array.prototype.forEach.call(box.querySelectorAll('button[data-u]'), function (b) {
       b.onclick = function () {
         var on = b.getAttribute('data-on') === '1', r = room();
-        if (on && Object.keys(admins).length >= MAX) { toast('관리자는 ' + MAX + '명까지 정할 수 있어요'); return; }
+        if (on && Object.keys(admins).length >= MAX) { toast('방장 포함 ' + (MAX + 1) + '명까지 정할 수 있어요'); return; }
         b.disabled = true;
         window.__ttRpc('set_room_admin', { p_room: r.id, p_user: b.getAttribute('data-u'), p_on: on }).then(function () {
           toast(on ? '관리자로 정했어요' : '관리자에서 뺐어요'); return load();
@@ -643,7 +643,7 @@ window.__ttSeenLine = function (m, isMe) {
   window.ttToggleAdmin = function (uid) {
     var r = room(); if (!r || !isCreator()) return;
     var on = !admins[uid];
-    if (on && Object.keys(admins).length >= MAX) { toast('관리자는 ' + MAX + '명까지 정할 수 있어요'); return; }
+    if (on && Object.keys(admins).length >= MAX) { toast('방장 포함 ' + (MAX + 1) + '명까지 정할 수 있어요'); return; }
     window.__ttRpc('set_room_admin', { p_room: r.id, p_user: uid, p_on: on }).then(function () {
       toast(on ? '관리자로 정했어요' : '관리자에서 뺐어요'); return load();
     }).then(function () { if (window.openManage) window.openManage(); }).catch(function (e) {
@@ -660,7 +660,7 @@ window.__ttSeenLine = function (m, isMe) {
       b.onclick = openSheet; anchor.parentNode.insertBefore(b, anchor.nextSibling);
     }
     var n = Object.keys(admins).length;
-    b.textContent = '＋ 방장 추가 (관리자 ' + n + '/' + MAX + '명)';
+    b.textContent = '＋ 방장 추가 (방장 포함 ' + (n + 1) + '/' + (MAX + 1) + '명)';
     b.style.display = isCreator() ? '' : 'none';
   }
   window.addEventListener('load', function () {
@@ -670,4 +670,91 @@ window.__ttSeenLine = function (m, isMe) {
     setInterval(function () { var r = room(); if (r && r.id !== last) { last = r.id; admins = {}; load(); } }, 1500);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
   });
+})();
+
+// ── 계정 이어하기: 앱을 새로 깔거나 링크→앱으로 옮겨도 예전 계정 그대로 ──
+(function () {
+  function toast(t) { var e = document.getElementById('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { e.classList.remove('on'); }, 2600); }
+  function errMsg(e) {
+    var m = (e && e.message || '').replace(/^[A-Z_]+:\s*/, '');
+    return /function|schema|find|404/i.test(m) ? '이어하기 기능을 서버에 준비 중이에요' : (m || '잠시 뒤 다시 해 주세요');
+  }
+  var INP = 'width:100%;font-size:20px;letter-spacing:3px;text-align:center;padding:14px 16px;border-radius:14px;border:1px solid var(--line);font-family:inherit;text-transform:uppercase';
+  function sheet() {
+    var sh = document.getElementById('transferSheet');
+    if (sh) return sh;
+    sh = document.createElement('div'); sh.className = 'sheet'; sh.id = 'transferSheet';
+    sh.innerHTML = '<div class="dim" data-x></div><div class="pan"><div class="grab"></div><div class="top"><div class="logo" style="font-size:18px">계정 이어하기</div></div><div style="padding:0 18px 4px">' +
+      '<div id="trOut"><div class="sec">이 기기 계정을 다른 기기로</div><div class="t3" style="margin:-4px 0 10px">코드를 만들어 새 기기(또는 새로 깐 앱)에 넣으면 노크방·기록이 그대로 옮겨져요</div>' +
+      '<button class="btn bs" id="trMake">이어하기 코드 만들기</button><div id="trCode" style="display:none;margin-top:12px;text-align:center"></div><div style="height:18px"></div></div>' +
+      '<div class="sec">예전 계정 불러오기</div><div class="t3" style="margin:-4px 0 10px">예전 기기에서 설정 → 계정 이어하기 → 코드 만들기를 누르고, 나온 코드를 여기에 넣어 주세요</div>' +
+      '<input id="trInput" maxlength="12" autocomplete="off" placeholder="ABCD-EFG-HJK" style="' + INP + '">' +
+      '<button class="btn bp" id="trClaim" style="margin-top:10px">이 코드로 이어하기</button>' +
+      '<button class="btn bw" style="margin-top:8px" data-x>닫기</button></div></div>';
+    (document.getElementById('app') || document.body).appendChild(sh);
+    Array.prototype.forEach.call(sh.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { sh.classList.remove('on'); }; });
+    sh.querySelector('#trMake').onclick = function () {
+      var b = this; if (!window.__ttRpc) { toast('잠시 뒤 다시 눌러 주세요'); return; }
+      b.disabled = true;
+      window.__ttRpc('create_transfer_code').then(function (code) {
+        code = typeof code === 'string' ? code : (code && (code.create_transfer_code || code.code)) || '';
+        var box = document.getElementById('trCode'); box.style.display = '';
+        box.innerHTML = '<div style="font-size:28px;font-weight:800;letter-spacing:4px;padding:14px;border:1px dashed var(--line);border-radius:14px">' + code + '</div>' +
+          '<div class="t3" style="margin-top:6px">7일 동안 쓸 수 있어요 · 한 번 쓰면 사라져요 · 다른 사람에게 보여주지 마세요</div>' +
+          '<button class="mini bs" id="trCopy" style="margin-top:8px">코드 복사</button>';
+        document.getElementById('trCopy').onclick = function () {
+          (navigator.clipboard ? navigator.clipboard.writeText(code) : Promise.reject()).then(function () { toast('코드를 복사했어요'); }, function () { toast('코드를 길게 눌러 복사해 주세요'); });
+        };
+        b.disabled = false; b.textContent = '코드 다시 만들기';
+      }).catch(function (e) { b.disabled = false; toast(errMsg(e)); });
+    };
+    sh.querySelector('#trClaim').onclick = function () {
+      var b = this, v = (document.getElementById('trInput').value || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      if (v.length < 10) { toast('코드 10자리를 모두 넣어 주세요'); return; }
+      if (!window.__ttRpc) { toast('잠시 뒤 다시 눌러 주세요'); return; }
+      b.disabled = true; b.textContent = '옮기는 중…';
+      window.__ttRpc('claim_transfer_code', { p_code: v }).then(function (res) {
+        res = res || {};
+        try {
+          var KEY = 'ttokttok-proto-v1', z = JSON.parse(localStorage.getItem(KEY) || '{}') || {};
+          var r = res.room || null, m = res.member || {}, p = res.profile || {};
+          var nm = m.name || m.nickname || p.name || p.nickname || p.display_name;
+          if (nm) z.name = String(nm).slice(0, 8);
+          if (r && r.id) { z.roomId = r.id; z.roomCode = r.code; z.roomName = r.name; z.started = true; }
+          localStorage.setItem(KEY, JSON.stringify(z));
+        } catch (e) {}
+        toast('예전 계정을 불러왔어요 · 노크방 ' + (res.rooms || 0) + '개');
+        setTimeout(function () { location.reload(); }, 900);
+      }).catch(function (e) { b.disabled = false; b.textContent = '이 코드로 이어하기'; toast(errMsg(e)); });
+    };
+    return sh;
+  }
+  window.ttTransfer = function (fromOnb) {
+    var sh = sheet();
+    document.getElementById('trOut').style.display = fromOnb ? 'none' : '';
+    document.getElementById('trCode').style.display = 'none';
+    sh.classList.add('on');
+    if (fromOnb) setTimeout(function () { var i = document.getElementById('trInput'); i && i.focus(); }, 250);
+  };
+})();
+
+// ── 그림 완성 축하: 30칸이 다 열리면 방 사람 모두에게 한 번씩 ──
+(function () {
+  function check() {
+    var r = window.__ttRoom, n = window.__ttOpenedCount ? window.__ttOpenedCount() : 0;
+    if (!r || n < 30 || document.hidden) return;
+    var key = 'tt-done-' + r.id + '-' + (window.__ttMonth ? window.__ttMonth() : 0);
+    try { if (localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch (e) { return; }
+    if (window.__ttAnimScan) window.__ttAnimScan();
+    var sh = document.createElement('div'); sh.className = 'sheet on'; sh.id = 'doneSheet';
+    var esc = function (s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    sh.innerHTML = '<div class="dim" data-x></div><div class="pan" style="text-align:center"><div class="grab"></div>' +
+      '<div style="font-size:44px;margin:6px 0 2px">🎉</div><div class="logo" style="font-size:20px">우리 그림이 완성됐어요!</div>' +
+      '<div class="t2" style="margin:8px 18px 4px;line-height:1.55">‘' + esc(r.name) + '’ 식구들이 한 달 동안 30칸을 함께 채웠어요.<br>풍년이가 이제 움직여요 · 그림첩에서도 만날 수 있어요</div>' +
+      '<div style="padding:12px 18px 6px"><button class="btn bp" data-x>풍년이 보러 가기</button></div></div>';
+    (document.getElementById('app') || document.body).appendChild(sh);
+    Array.prototype.forEach.call(sh.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { sh.classList.remove('on'); setTimeout(function () { sh.remove(); }, 400); }; });
+  }
+  setInterval(check, 2000);
+  document.addEventListener('visibilitychange', check);
 })();

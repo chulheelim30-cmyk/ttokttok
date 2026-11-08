@@ -1,4 +1,4 @@
--- 노크방 관리자: 처음 만든 사람(방장)이 구성원 중 최대 3명을 관리자로 정해요.
+-- 노크방 관리자: 처음 만든 사람(방장)이 구성원 중 최대 2명을 관리자로(방장 포함 총 3명) 정해요.
 -- 관리자는 앱에서 방장과 같은 일을 해요(방 이름·설정 바꾸기, 실명 보기, 내보내기, 노크방 없애기).
 -- 단, 관리자 지정·해제는 방장만, 방장은 아무도 내보낼 수 없어요.
 
@@ -38,7 +38,7 @@ begin
     select count(*) into v_cnt from public.room_admins a
       join public.members m on m.room_id = a.room_id and m.user_id = a.user_id
       where a.room_id = p_room and a.user_id <> p_user;
-    if v_cnt >= 3 then raise exception '관리자는 3명까지 정할 수 있어요'; end if;
+    if v_cnt >= 2 then raise exception '방장 포함 3명까지 정할 수 있어요'; end if;
     insert into public.room_admins(room_id, user_id) values (p_room, p_user) on conflict do nothing;
   else
     delete from public.room_admins where room_id = p_room and user_id = p_user;
