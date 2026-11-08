@@ -1,6 +1,8 @@
 // 풍년이만 움직여요: 눈 감은 그림으로 자연스럽게 깜빡이고, 몸은 살짝 숨쉬어요 (그림첩 g01~g12)
 (function () {
   var BODY = {"1":[35,60,35,30],"2":[55,45,30,25],"3":[52,65,18,25],"4":[62,65,28,20],"5":[50,80,25,20],"6":[46,52,30,18],"8":[66,55,30,25],"9":[29,60,20,20],"10":[46,50,10,28],"11":[49,60,10,28],"12":[50,50,32,22]};
+  // AI 영상(Wan 2.2, 상업적 사용 가능)이 준비된 그림 번호: art/anim/gNN.mp4 를 넣고 여기에 번호를 적으면 그 그림은 영상으로 움직여요
+  var VIDEOS = [];
   var EYES = {"1":[55.667,30.0,24.0,22.8],"2":[21.5,63.4,25.0,18.4],"3":[43.833,22.4,17.333,13.2],"4":[43.667,40.0,10.167,12.0],"5":[39.167,30.2,20.333,23.8],"7":[11.167,22.2,77.333,40.8],"8":[21.5,36.4,27.0,24.8],"9":[24.333,34.8,20.0,12.0],"10":[41.667,22.4,10.0,8.0],"11":[43.667,28.8,12.667,7.4],"12":[23.333,46.8,12.333,18.2]}; // 눈 부분 위치 (그림 대비 %): 왼쪽, 위, 너비, 높이
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   var css = document.createElement('style');
@@ -32,6 +34,14 @@
     var n = num(img.getAttribute('src')), b = BODY[n], e = EYES[n];
     if (!b && !e) return;
     img.setAttribute('data-anim', n);
+    if (VIDEOS.indexOf(n) >= 0) {
+      var vb = document.createElement('div'); vb.className = 'tt-anim'; vb.setAttribute('aria-hidden', 'true');
+      var v = document.createElement('video'); v.src = './art/anim/g' + (n < 10 ? '0' : '') + n + '.mp4?v=1';
+      v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.setAttribute('playsinline', '');
+      v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s';
+      v.oncanplay = function () { v.style.opacity = 1; v.play().catch(function () {}); };
+      vb.appendChild(v); img.parentNode.insertBefore(vb, img.nextSibling); return;
+    }
     var box = document.createElement('div'); box.className = 'tt-anim'; box.setAttribute('aria-hidden', 'true');
     var dur = n === 6 ? '6.5s' : '5s', ox, oy;
     if (b) {
