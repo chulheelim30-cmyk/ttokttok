@@ -396,7 +396,8 @@
       '풍년이 수채화 그림 12장 · 열릴 때 3초 동안 움직여요',
       '실명 등록: 방장에게는 별명과 실명이 함께 보여요',
       '다른 구성원에게 별명·실명 중 무엇을 보일지 직접 골라요',
-      '업데이트 소식 창이 비쳐 보이던 오류 수정'
+      '업데이트 소식 창이 비쳐 보이던 오류 수정',
+      '그림첩: 열린 그림을 휴대폰에 저장할 수 있어요 · 잠긴 그림은 더 흐리게'
     ] },
     { v: '베타2', d: '2026.11.08', items: [
       '모든 기능 무료 (구독 없음)',
@@ -449,3 +450,41 @@ window.__ttSeenLine = function (m, isMe) {
   if (!(h >= 0)) return '';
   return ' · 접속 ' + (h < 1 ? '방금 전' : h < 24 ? Math.floor(h) + '시간 전' : Math.floor(h / 24) + '일 전');
 };
+
+// 그림첩: 열린 그림을 휴대폰에 저장 (공유 시트 → '이미지 저장', 안 되면 내려받기)
+(function () {
+  function toast(t) { var e = document.getElementById('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { e.classList.remove('on'); }, 2600); }
+  async function save() {
+    var img = document.querySelector('#picView img'); if (!img || img.classList.contains('pv-blur')) return;
+    try {
+      var im = new Image(); im.crossOrigin = 'anonymous'; im.src = img.src;
+      await im.decode();
+      var c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+      c.getContext('2d').drawImage(im, 0, 0);
+      var blob = await new Promise(function (r) { c.toBlob(r, 'image/jpeg', 0.92); });
+      var t = (document.getElementById('picViewTitle') || {}).textContent || '그림';
+      var file = new File([blob], '톡톡_' + t.replace(/[^\w가-힣]+/g, '_') + '.jpg', { type: 'image/jpeg' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file] }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name;
+      document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      toast('그림을 저장했어요');
+    } catch (e) { toast('저장하지 못했어요 · 그림을 길게 눌러 저장해 보세요'); }
+  }
+  function sync() {
+    var pan = document.querySelector('#picSheet .pan'); if (!pan) return;
+    var b = document.getElementById('ttSavePic');
+    if (!b) {
+      b = document.createElement('button'); b.id = 'ttSavePic'; b.className = 'btn bp'; b.style.marginTop = '14px';
+      b.textContent = '휴대폰에 저장하기'; b.onclick = save;
+      var buy = document.getElementById('picBuy'); buy ? buy.parentNode.insertBefore(b, buy.nextSibling) : pan.appendChild(b);
+    }
+    var img = document.querySelector('#picView img');
+    b.style.display = img && !img.classList.contains('pv-blur') ? '' : 'none';
+  }
+  window.addEventListener('load', function () {
+    var at = window.albumTap;
+    if (typeof at === 'function') window.albumTap = function () { var x = at.apply(this, arguments); sync(); return x; };
+  });
+})();

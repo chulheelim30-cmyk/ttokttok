@@ -38,3 +38,8 @@ html,body{background:#eef2f9}
 img.art[src*="/art/g"]{animation:pungIn 3s ease-out both;transform-origin:50% 60%}
 @keyframes pungIn{0%{transform:scale(1.14) translateY(3%) rotate(-1deg);filter:brightness(1.12) saturate(.85)}35%{transform:scale(1.06) translateY(-1%) rotate(.6deg)}70%{transform:scale(1.02) rotate(-.3deg)}100%{transform:none;filter:none}}
 @media (prefers-reduced-motion:reduce){img.art[src*="/art/g"]{animation:none}}
+
+/* 그림첩: 잠긴 그림은 더 흐리게, 미리 보기 없음 */
+.th.blur img,.th.blur video{filter:blur(24px) saturate(.5) brightness(1.08)!important;transform:scale(1.4)!important}
+.pv img.pv-blur,.pv video.pv-blur{filter:blur(34px) saturate(.5) brightness(1.08)!important;transform:scale(1.5)!important}
+#picBuy{display:none!important}
