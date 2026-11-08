@@ -14,7 +14,7 @@
   "enableNotifications": true,
   "startUrl": "/ttokttok/?src=play",
   "iconUrl": "https://chulheelim30-cmyk.github.io/ttokttok/icon-512.png",
-  "maskableIconUrl": "https://chulheelim30-cmyk.github.io/ttokttok/icon-512.png",
+  "maskableIconUrl": "https://chulheelim30-cmyk.github.io/ttokttok/icon-maskable-512.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "./upload.keystore",
