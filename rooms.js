@@ -230,7 +230,7 @@
       await window.__ttRpc('set_real_name', { p_room: r.id, p_name: v });
       await window.__ttRpc('set_shown_name', { p_room: r.id, p_name: pickShow ? v : null });
       document.getElementById('realSheet').classList.remove('on');
-      toast(v ? (pickShow ? '구성원에게 실명으로 보여요' : '구성원에게 별명으로 보여요') : '실명을 지웠어요');
+      toast(v ? (pickShow ? '구성원에게 실명으로 보여요' : '구성원에게 별명으로 보여요') : '실명 없이 별명으로 보여요');
       var t = document.getElementById('realMineTxt'); if (t) t.textContent = mineTxt(v, pickShow);
       loadOwnerNames();
     } catch (e) { toast((e && e.message || '저장하지 못했어요').replace(/^[A-Z_]+:\s*/, '')); }
@@ -238,7 +238,7 @@
   async function maybeAsk() {
     var r = room(); if (!r || !window.__ttRpc) return;
     var key = 'tt-real-asked2-' + r.id;
-    if (LS(key)) return;
+    if (LS(key) || isOwner()) return; // 방장은 자기 방에서 따로 묻지 않아요 (관리 화면에서 바꿀 수 있어요)
     try {
       var mine = await window.__ttRpc('my_real_name', { p_room: r.id });
       LS(key, '1');
@@ -268,9 +268,12 @@
   // 입장할 때 적은 실명을 들어간 방에 저장해요
   var pending = '';
   window.__ttAfterJoin = function (r) {
-    var v = (pending || '').trim(); pending = '';
-    ['onbRealInput', 'codeRealInput'].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ''; });
+    // 자동 완성으로 채워져 input 이벤트가 없을 때도 칸의 값을 읽어요
+    var v = pending || '';
+    ['onbRealInput', 'codeRealInput'].forEach(function (id) { var e = document.getElementById(id); if (e) { if (!v) v = e.value; e.value = ''; } });
+    v = v.trim(); pending = '';
     if (!v || !r || !r.id || !window.__ttRpc) return;
+    LS('tt-real-asked2-' + r.id, '1'); // 방금 적었으니 들어가자마자 또 묻지 않아요
     window.__ttRpc('set_real_name', { p_room: r.id, p_name: v }).then(function () { if (isOwner()) loadOwnerNames(); }).catch(function () {});
   };
   function bindInput(id) { var e = document.getElementById(id); if (e) e.addEventListener('input', function () { pending = e.value; }); }
@@ -301,6 +304,25 @@
     var om = window.openManage;
     if (typeof om === 'function') window.openManage = function () { var x = om.apply(this, arguments); manageRow(); loadOwnerNames(); return x; };
     bindInput('onbRealInput'); bindInput('codeRealInput');
+    // 설정 > 내 이름 바꾸기: 별명과 실명을 함께, 실명은 꼭 적어야 저장돼요
+    var orn = window.openRename, srn = window.saveRename;
+    if (typeof orn === 'function') window.openRename = function () {
+      var x = orn.apply(this, arguments), ri = document.getElementById('renameRealInput'), r = room();
+      if (ri) { ri.value = ''; if (r && window.__ttRpc) window.__ttRpc('my_real_name', { p_room: r.id }).then(function (v) { if (v && !ri.value) ri.value = v; }).catch(function () {}); }
+      return x;
+    };
+    if (typeof srn === 'function') window.saveRename = function () {
+      var ri = document.getElementById('renameRealInput'), v = ri ? ri.value.trim() : '', r = room();
+      if (ri && !v) { toast('실명을 적어 주세요'); ri.focus(); return; }
+      var x = srn.apply(this, arguments);
+      if (v && r && window.__ttRpc) {
+        var me = window.__ttMe && window.__ttMe();
+        window.__ttRpc('set_real_name', { p_room: r.id, p_name: v }).then(function () {
+          if (me && shown[me]) return window.__ttRpc('set_shown_name', { p_room: r.id, p_name: v }); // 실명으로 보이기를 고른 사람은 보이는 이름도 같이 바꿔요
+        }).then(function () { loadOwnerNames(); }).catch(function (e) { toast((e && e.message || '실명을 저장하지 못했어요').replace(/^[A-Z_]+:\s*/, '')); });
+      }
+      return x;
+    };
     // 초대받아 시작할 때만 실명 칸을 보여요
     var oj = document.getElementById('onbJoin'), box = document.getElementById('onbRealBox');
     function syncOnb() { if (oj && box) box.style.display = oj.style.display === 'block' ? '' : 'none'; }
@@ -448,7 +470,7 @@ window.__ttSeenLine = function (m, isMe) {
   if (isMe || !m || !m.last_seen_at) return '';
   var h = (Date.now() - Date.parse(m.last_seen_at)) / 36e5;
   if (!(h >= 0)) return '';
-  return ' · 접속 ' + (h < 1 ? '방금 전' : h < 24 ? Math.floor(h) + '시간 전' : Math.floor(h / 24) + '일 전');
+  return ' · 접속 ' + (h < 1 ? '방금 전' : Math.floor(h) + '시간 전');
 };
 
 // 그림첩: 열린 그림을 휴대폰에 저장 (공유 시트 → '이미지 저장', 안 되면 내려받기)

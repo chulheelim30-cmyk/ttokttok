@@ -24,7 +24,7 @@
     if (!mem || !mem.last_seen_at) return '';
     var h = (Date.now() - Date.parse(mem.last_seen_at)) / 3600e3;
     if (!(h >= 0) || h > (mem.threshold_hours || 48)) return '';
-    var t = h < 1 ? '방금 전' : h < 24 ? Math.floor(h) + '시간 전' : Math.floor(h / 24) + '일 전';
+    var t = h < 1 ? '방금 전' : Math.floor(h) + '시간 전';
     return '<div class="t3" style="margin-top:3px">앱은 ' + t + '에 열었어요</div>';
   };
 

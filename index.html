@@ -14,12 +14,12 @@
 <meta name="apple-mobile-web-app-title" content="톡톡">
 <meta name="description" content="하루 1초 노크로 가까운 사람과 오늘을 주고받는 안부 앱">
 <link rel="stylesheet" href="./app-21865120.css">
-<script type="module" src="./app-5b0082f1.js"></script>
+<script type="module" src="./app-5b0082f1.js?v=2"></script>
 <script src="./pwa.js?v=2" defer></script>
 <script src="./back.js?v=2" defer></script>
 <script src="./push.js?v=1" defer></script>
-<script src="./mood.js?v=3" defer></script>
-<script src="./rooms.js?v=13" defer></script>
+<script src="./mood.js?v=4" defer></script>
+<script src="./rooms.js?v=15" defer></script>
 <script src="./account.js?v=1" defer></script>
 <style>
 .pic-btn{display:block;width:100%;border:0;padding:0;margin-top:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 26px rgba(20,40,75,.16);font:inherit}
@@ -390,9 +390,12 @@ html,body{background:#ece6da;color:var(--ink)}
 </div></div>
 
 <div class="sheet" id="nameSheet"><div class="dim" onclick="closeRename()"></div><div class="pan"><div class="grab"></div>
-<div class="top"><div class="logo" style="font-size:18px">노크방에서 불릴 이름</div></div>
+<div class="top"><div class="logo" style="font-size:18px">내 이름 · 별명과 실명</div></div>
 <div style="padding:6px 18px 0">
+<div class="t3" style="margin:0 0 6px">별명 · 노크방에서 불릴 이름</div>
 <input id="renameInput" maxlength="8" autocomplete="off" style="width:100%;font-size:17px;padding:15px 16px;border-radius:14px;border:1px solid var(--line);font-family:inherit">
+<div class="t3" style="margin:14px 0 6px">실명 · 방장에게 보여요 (필수)</div>
+<input id="renameRealInput" maxlength="20" autocomplete="name" placeholder="예: 홍길동" style="width:100%;font-size:17px;padding:15px 16px;border-radius:14px;border:1px solid var(--line);font-family:inherit">
 <button class="btn bp" style="margin-top:12px" onclick="saveRename()">저장하기</button>
 </div>
 </div></div>
