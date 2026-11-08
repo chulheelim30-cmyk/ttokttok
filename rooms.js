@@ -161,7 +161,8 @@
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function toast(t) { var e = document.getElementById('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { e.classList.remove('on'); }, 2600); }
   function room() { return window.__ttRoom || null; }
-  function isOwner() { var r = room(); return !!(r && window.__ttMe && r.created_by === window.__ttMe()); }
+  function isCreator() { var r = room(); return !!(r && window.__ttMe && r.created_by === window.__ttMe()); }
+  function isOwner() { return isCreator() || !!(window.__ttIsAdmin && window.__ttIsAdmin()); } // 방장 또는 관리자
 
   window.__ttRealTag = function (uid) {
     var n = names[uid];
@@ -238,7 +239,7 @@
   async function maybeAsk() {
     var r = room(); if (!r || !window.__ttRpc) return;
     var key = 'tt-real-asked2-' + r.id;
-    if (LS(key) || isOwner()) return; // 방장은 자기 방에서 따로 묻지 않아요 (관리 화면에서 바꿀 수 있어요)
+    if (LS(key) || isCreator()) return; // 방장은 자기 방에서 따로 묻지 않아요 (관리 화면에서 바꿀 수 있어요)
     try {
       var mine = await window.__ttRpc('my_real_name', { p_room: r.id });
       LS(key, '1');
@@ -572,4 +573,88 @@ window.__ttSeenLine = function (m, isMe) {
     if (c && c.style.display && c.style.display !== 'none' && !document.querySelector('.sheet.on')) { clearInterval(t); show(); }
     if (tries > 40) clearInterval(t);
   }, 1500);
+})();
+
+// 노크방 관리자: 방장(처음 만든 사람)이 구성원 중 최대 3명을 관리자로 정해요. 관리자는 앱에서 방장과 같은 일을 해요.
+(function () {
+  var admins = {}, last = null, MAX = 3;
+  function room() { return window.__ttRoom || null; }
+  function me() { return window.__ttMe && window.__ttMe(); }
+  function isCreator() { var r = room(); return !!(r && r.created_by === me()); }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function toast(t) { var e = document.getElementById('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { e.classList.remove('on'); }, 2600); }
+  window.__ttIsAdmin = function () { var m = me(); return !!(m && admins[m]); };
+  window.__ttIsAdminUser = function (uid) { return !!admins[uid]; };
+  function load() {
+    var r = room(); if (!r || !window.__ttRpc) return Promise.resolve();
+    return window.__ttRpc('room_admin_list', { p_room: r.id }).then(function (rows) {
+      var next = {}; (rows || []).forEach(function (x) { next[x.user_id || x] = 1; });
+      var changed = JSON.stringify(next) !== JSON.stringify(admins); admins = next;
+      if (changed && window.__ttRerender) window.__ttRerender();
+    }).catch(function () {}); // 서버에 아직 관리자 기능이 없으면 예전처럼 방장만
+  }
+  // 노크방 관리: 방장에게만 ‘관리자 정하기’
+  function section(box) {
+    if (!box || box.nodeType !== 1) {
+      var mem = document.getElementById('manageMembers'); if (!mem) return;
+      box = document.getElementById('adminBox');
+      if (!box) { box = document.createElement('div'); box.id = 'adminBox'; mem.parentNode.insertBefore(box, mem.nextSibling); }
+    }
+    if (!isCreator()) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    var list = (window.__ttMembers ? window.__ttMembers() : []).filter(function (m) { return m.user_id !== me(); });
+    var n = Object.keys(admins).length;
+    box.innerHTML = '<div class="sec">관리자 · ' + n + '/' + MAX + '명</div><div class="t3" style="margin:-4px 0 8px">관리자는 방장과 같이 방 이름·설정 바꾸기, 실명 보기, 내보내기를 할 수 있어요</div>' +
+      '<div class="card" style="margin:0;padding:4px 14px">' + (list.length ? list.map(function (m) {
+        var on = !!admins[m.user_id];
+        return '<div class="mem"><div class="t1" style="font-size:14px">' + esc(m.name) + '</div><div class="sp"></div>' +
+          '<button class="mini ' + (on ? 'bs' : 'bp') + '" data-u="' + esc(m.user_id) + '" data-on="' + (on ? 0 : 1) + '">' + (on ? '관리자 해제' : '관리자로') + '</button></div>';
+      }).join('') : '<div class="t3" style="padding:10px 0">아직 다른 구성원이 없어요</div>') + '</div>';
+    Array.prototype.forEach.call(box.querySelectorAll('button[data-u]'), function (b) {
+      b.onclick = function () {
+        var on = b.getAttribute('data-on') === '1', r = room();
+        if (on && Object.keys(admins).length >= MAX) { toast('관리자는 ' + MAX + '명까지 정할 수 있어요'); return; }
+        b.disabled = true;
+        window.__ttRpc('set_room_admin', { p_room: r.id, p_user: b.getAttribute('data-u'), p_on: on }).then(function () {
+          toast(on ? '관리자로 정했어요' : '관리자에서 뺐어요'); return load();
+        }).then(function () { section(box); }).catch(function (e) {
+          b.disabled = false;
+          var m = (e && e.message || '').replace(/^[A-Z_]+:\s*/, '');
+          toast(/function|schema|find|404/i.test(m) ? '관리자 기능을 서버에 준비 중이에요' : (m || '바꾸지 못했어요'));
+        });
+      };
+    });
+  }
+  function openSheet() {
+    var sh = document.getElementById('adminSheet');
+    if (!sh) {
+      sh = document.createElement('div'); sh.className = 'sheet'; sh.id = 'adminSheet';
+      sh.innerHTML = '<div class="dim" data-x></div><div class="pan"><div class="grab"></div><div class="top"><div class="logo" style="font-size:18px">방장 추가 · 관리자 정하기</div></div>' +
+        '<div style="padding:0 18px" id="adminSheetBody"></div><div style="padding:0 18px"><button class="btn bw" style="margin-top:12px" data-x>닫기</button></div></div>';
+      (document.getElementById('app') || document.body).appendChild(sh);
+      Array.prototype.forEach.call(sh.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { sh.classList.remove('on'); }; });
+    }
+    var body = document.getElementById('adminSheetBody'); section(body); load().then(function () { section(body); });
+    sh.classList.add('on');
+  }
+  window.ttOpenAdmins = openSheet;
+  // 노크방 페이지: 처음 만든 사람에게만 ‘방장 추가’ 버튼
+  function pageBtn() {
+    var anchor = document.getElementById('members'); if (!anchor) return;
+    var b = document.getElementById('addAdminBtn');
+    if (!b) {
+      b = document.createElement('button'); b.id = 'addAdminBtn'; b.className = 'btn bw'; b.style.marginTop = '10px';
+      b.onclick = openSheet; anchor.parentNode.insertBefore(b, anchor.nextSibling);
+    }
+    var n = Object.keys(admins).length;
+    b.textContent = '＋ 방장 추가 (관리자 ' + n + '/' + MAX + '명)';
+    b.style.display = isCreator() ? '' : 'none';
+  }
+  window.addEventListener('load', function () {
+    setInterval(pageBtn, 1500);
+    var om = window.openManage;
+    if (typeof om === 'function') window.openManage = function () { var x = om.apply(this, arguments); load().then(section); section(); return x; };
+    setInterval(function () { var r = room(); if (r && r.id !== last) { last = r.id; admins = {}; load(); } }, 1500);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
+  });
 })();
