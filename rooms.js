@@ -434,7 +434,7 @@
     var pc = document.querySelector('.plus-card');
     if (pc && !document.getElementById('notesCard')) {
       var b = document.createElement('button'); b.className = 'card'; b.id = 'notesCard'; b.onclick = open;
-      b.style.cssText = 'width:100%;text-align:left;border:0;font:inherit';
+      b.style.cssText = 'display:block;box-sizing:border-box;width:calc(100% - 28px);text-align:left;border:0;font:inherit';
       b.innerHTML = '<div class="row"><div class="t1" style="font-size:14px">업데이트 소식</div><div class="sp"></div><span class="chip y">' + VER + '</span></div>';
       pc.parentNode.insertBefore(b, pc);
     }
@@ -454,23 +454,32 @@ window.__ttSeenLine = function (m, isMe) {
 // 그림첩: 열린 그림을 휴대폰에 저장 (공유 시트 → '이미지 저장', 안 되면 내려받기)
 (function () {
   function toast(t) { var e = document.getElementById('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { e.classList.remove('on'); }, 2600); }
-  async function save() {
+  // 아이폰은 누르는 즉시 공유 창을 열어야 해서, 그림이 열릴 때 파일을 미리 만들어 둠
+  var ready = null;
+  async function build(img) {
+    var im = new Image(); im.src = img.src; await im.decode();
+    var c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+    c.getContext('2d').drawImage(im, 0, 0);
+    var blob = await new Promise(function (r) { c.toBlob(r, 'image/jpeg', 0.92); });
+    var t = (document.getElementById('picViewTitle') || {}).textContent || '그림';
+    return new File([blob], '톡톡_' + t.replace(/[^\w가-힣]+/g, '_') + '.jpg', { type: 'image/jpeg' });
+  }
+  function iosApp() { var u = navigator.userAgent; return (/iP(hone|ad|od)/.test(u) || (navigator.maxTouchPoints > 1 && /Mac/.test(u))) && navigator.standalone; }
+  function download(f) {
+    if (iosApp()) { toast('그림을 길게 눌러 \'사진에 추가\'를 눌러 주세요'); return; }
+    var a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name;
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    toast('그림을 저장했어요');
+  }
+  function fail() { toast('저장하지 못했어요 · 그림을 길게 눌러 저장해 보세요'); }
+  function save() {
     var img = document.querySelector('#picView img'); if (!img || img.classList.contains('pv-blur')) return;
-    try {
-      var im = new Image(); im.crossOrigin = 'anonymous'; im.src = img.src;
-      await im.decode();
-      var c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
-      c.getContext('2d').drawImage(im, 0, 0);
-      var blob = await new Promise(function (r) { c.toBlob(r, 'image/jpeg', 0.92); });
-      var t = (document.getElementById('picViewTitle') || {}).textContent || '그림';
-      var file = new File([blob], '톡톡_' + t.replace(/[^\w가-힣]+/g, '_') + '.jpg', { type: 'image/jpeg' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file] }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
-      }
-      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name;
-      document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-      toast('그림을 저장했어요');
-    } catch (e) { toast('저장하지 못했어요 · 그림을 길게 눌러 저장해 보세요'); }
+    var f = ready && ready.src === img.src ? ready.file : null;
+    if (f && navigator.canShare && navigator.canShare({ files: [f] })) {
+      navigator.share({ files: [f] }).catch(function (e) { if (!e || e.name !== 'AbortError') download(f); });
+      return;
+    }
+    (f ? Promise.resolve(f) : build(img)).then(download).catch(fail);
   }
   function sync() {
     var pan = document.querySelector('#picSheet .pan'); if (!pan) return;
@@ -481,7 +490,9 @@ window.__ttSeenLine = function (m, isMe) {
       var buy = document.getElementById('picBuy'); buy ? buy.parentNode.insertBefore(b, buy.nextSibling) : pan.appendChild(b);
     }
     var img = document.querySelector('#picView img');
-    b.style.display = img && !img.classList.contains('pv-blur') ? '' : 'none';
+    var ok = img && !img.classList.contains('pv-blur');
+    b.style.display = ok ? '' : 'none';
+    if (ok && !(ready && ready.src === img.src)) { var s = img.src; build(img).then(function (f) { ready = { src: s, file: f }; }).catch(function () {}); }
   }
   window.addEventListener('load', function () {
     var at = window.albumTap;
