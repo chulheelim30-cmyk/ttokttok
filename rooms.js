@@ -359,3 +359,50 @@
     return rows.map(function (x) { return x.m; });
   };
 })();
+
+// 업데이트 소식: 새 버전이면 한 번 보여 주고, 설정에서 언제든 다시 볼 수 있어요
+(function () {
+  var VER = '베타2';
+  var NOTES = [
+    { v: '베타2', d: '2026.11.08', items: [
+      '모든 기능 무료 (구독 없음)',
+      '방장 관리 화면: 확인 필요한 사람이 위로, ‘확인 필요만’ 보기',
+      '방 만들기 쉬워짐: 추천 이름 버튼, Enter로 바로 만들기',
+      '황금 칸은 그림의 마지막 칸 1개',
+      '그림 완성 시 2~3초 효과 + 방 사람 모두에게 알림',
+      '베타 그림을 일러스트로 변경',
+      '그림이 넘어갈 때 칸 순서가 바뀌던 오류 수정',
+      '새 버전이 나오면 자동으로 업데이트'
+    ] }
+  ];
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function open() {
+    var s = document.getElementById('notesSheet');
+    if (!s) {
+      s = document.createElement('div'); s.className = 'sheet'; s.id = 'notesSheet';
+      s.innerHTML = '<div class="dim" data-x></div><div class="pan"><div class="grab"></div>' +
+        '<div class="top"><div class="logo" style="font-size:18px">업데이트 소식</div></div><div style="padding:0 18px" id="notesBody"></div>' +
+        '<div style="padding:0 18px"><button class="btn bp" style="margin-top:14px" data-x>확인</button></div></div>';
+      document.body.appendChild(s);
+      Array.prototype.forEach.call(s.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { s.classList.remove('on'); }; });
+    }
+    document.getElementById('notesBody').innerHTML = NOTES.map(function (n) {
+      return '<div class="sec" style="margin-top:6px">' + esc(n.v) + ' <span class="t3">· ' + esc(n.d) + '</span></div>' +
+        '<div class="t2" style="line-height:1.8">' + n.items.map(function (i) { return '· ' + esc(i); }).join('<br>') + '</div>';
+    }).join('');
+    s.classList.add('on');
+    try { localStorage.setItem('tt-notes-seen', VER); } catch (e) {}
+  }
+  window.ttOpenNotes = open;
+  window.addEventListener('load', function () {
+    var pc = document.querySelector('.plus-card');
+    if (pc && !document.getElementById('notesCard')) {
+      var b = document.createElement('button'); b.className = 'card'; b.id = 'notesCard'; b.onclick = open;
+      b.style.cssText = 'width:100%;text-align:left;border:0;font:inherit';
+      b.innerHTML = '<div class="row"><div class="t1" style="font-size:14px">업데이트 소식</div><div class="sp"></div><span class="chip y">' + VER + '</span></div>';
+      pc.parentNode.insertBefore(b, pc);
+    }
+    var seen = null; try { seen = localStorage.getItem('tt-notes-seen'); } catch (e) {}
+    if (seen !== VER) setTimeout(function () { if (!document.querySelector('.sheet.on')) open(); }, 2500);
+  });
+})();
