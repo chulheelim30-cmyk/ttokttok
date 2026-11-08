@@ -609,7 +609,7 @@ window.__ttSeenLine = function (m, isMe) {
       '<div class="card" style="margin:0;padding:4px 14px">' + (list.length ? list.map(function (m) {
         var on = !!admins[m.user_id];
         return '<div class="mem"><div class="t1" style="font-size:14px">' + esc(m.name) + '</div><div class="sp"></div>' +
-          '<button class="mini ' + (on ? 'bs' : 'bp') + '" data-u="' + esc(m.user_id) + '" data-on="' + (on ? 0 : 1) + '">' + (on ? '관리자 해제' : '관리자로') + '</button></div>';
+          '<button class="mini ' + (on ? 'bs' : 'bp') + '" data-u="' + esc(m.user_id) + '" data-on="' + (on ? 0 : 1) + '">' + (on ? '승인 취소' : '관리자 승인') + '</button></div>';
       }).join('') : '<div class="t3" style="padding:10px 0">아직 다른 구성원이 없어요</div>') + '</div>';
     Array.prototype.forEach.call(box.querySelectorAll('button[data-u]'), function (b) {
       b.onclick = function () {
@@ -617,7 +617,7 @@ window.__ttSeenLine = function (m, isMe) {
         if (on && Object.keys(admins).length >= MAX) { toast('방장 포함 ' + (MAX + 1) + '명까지 정할 수 있어요'); return; }
         b.disabled = true;
         window.__ttRpc('set_room_admin', { p_room: r.id, p_user: b.getAttribute('data-u'), p_on: on }).then(function () {
-          toast(on ? '관리자로 정했어요' : '관리자에서 뺐어요'); return load();
+          toast(on ? '관리자로 승인했어요' : '관리자 승인을 취소했어요'); return load();
         }).then(function () { section(box); }).catch(function (e) {
           b.disabled = false;
           var m = (e && e.message || '').replace(/^[A-Z_]+:\s*/, '');
@@ -645,7 +645,7 @@ window.__ttSeenLine = function (m, isMe) {
     var on = !admins[uid];
     if (on && Object.keys(admins).length >= MAX) { toast('방장 포함 ' + (MAX + 1) + '명까지 정할 수 있어요'); return; }
     window.__ttRpc('set_room_admin', { p_room: r.id, p_user: uid, p_on: on }).then(function () {
-      toast(on ? '관리자로 정했어요' : '관리자에서 뺐어요'); return load();
+      toast(on ? '관리자로 승인했어요' : '관리자 승인을 취소했어요'); return load();
     }).then(function () { if (window.openManage) window.openManage(); }).catch(function (e) {
       var m = (e && e.message || '').replace(/^[A-Z_]+:\s*/, '');
       toast(/function|schema|find|404/i.test(m) ? '관리자 기능을 서버에 준비 중이에요' : (m || '바꾸지 못했어요'));
@@ -749,7 +749,7 @@ window.__ttSeenLine = function (m, isMe) {
     var sh = document.createElement('div'); sh.className = 'sheet on'; sh.id = 'doneSheet';
     var esc = function (s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
     sh.innerHTML = '<div class="dim" data-x></div><div class="pan" style="text-align:center"><div class="grab"></div>' +
-      '<div style="font-size:44px;margin:6px 0 2px">🎉</div><div class="logo" style="font-size:20px">우리 그림이 완성됐어요!</div>' +
+      '<div style="font-size:44px;margin:6px 0 2px">🎉</div><div class="logo" style="font-size:20px;justify-content:center;text-align:center">우리 그림이 완성됐어요!</div>' +
       '<div class="t2" style="margin:8px 18px 4px;line-height:1.55">‘' + esc(r.name) + '’ 식구들이 한 달 동안 30칸을 함께 채웠어요.<br>풍년이가 이제 움직여요 · 그림첩에서도 만날 수 있어요</div>' +
       '<div style="padding:12px 18px 6px"><button class="btn bp" data-x>풍년이 보러 가기</button></div></div>';
     (document.getElementById('app') || document.body).appendChild(sh);
