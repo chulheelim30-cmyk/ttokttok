@@ -7,9 +7,9 @@
     '.tt-anim{position:absolute;inset:0;pointer-events:none;overflow:hidden}' +
     '.tt-anim img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}' +
     '.tt-breath{animation:ttBreath 5s cubic-bezier(.45,0,.55,1) infinite alternate}' +
-    '.tt-lid{position:absolute;border-radius:50%;transform:scaleY(0);animation:ttBlink 5s infinite}' +
+    '.tt-lid{position:absolute;border-radius:50%;transform:scaleY(0);animation:ttBlink 2s ease-in-out infinite}' +
     '@keyframes ttBreath{from{transform:none}to{transform:scale(1.004,1.011)}}' +
-    '@keyframes ttBlink{0%,90%{transform:scaleY(0)}93%,95%{transform:scaleY(1)}98%,100%{transform:scaleY(0)}}';
+    '@keyframes ttBlink{0%,78%{transform:scaleY(0)}86%,89%{transform:scaleY(1)}97%,100%{transform:scaleY(0)}}';
   document.head.appendChild(css);
   function num(src) { var m = /\/art\/g(\d\d)\.webp/.exec(src || ''); return m ? +m[1] : 0; }
   function add(img) {
@@ -25,8 +25,8 @@
       if (n === 6) cp.style.animationDuration = '6.5s';
       box.appendChild(cp);
     }
-    var delay = (Math.random() * 3).toFixed(2) + 's';
-    if (window.__ttBlink) c.e.forEach(function (e) { // 눈 깜빡임은 어색해서 꺼 둠 (자연스러운 영상으로 바꿀 예정)
+    var delay = (Math.random() * 2).toFixed(2) + 's';
+    c.e.forEach(function (e) {
       var w = e[2] * 2 * 1.45, h = e[2] * 2 * 1.15 * 1.2, l = document.createElement('i');
       l.className = 'tt-lid';
       l.style.cssText += 'left:' + (e[0] - w / 2) + '%;top:' + (e[1] - h / 2) + '%;width:' + w + '%;height:' + h + '%;' +
