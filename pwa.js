@@ -1,7 +1,19 @@
 // 또옥또옥 웹앱: 오프라인 실행 등록 + 홈 화면 설치 안내
 (function () {
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
+    // 새 버전이 올라오면 기존 사용자도 자동으로 새 화면을 받도록: 앱을 다시 볼 때마다 확인 → 바뀌었으면 한 번 새로고침
+    var hadCtrl = !!navigator.serviceWorker.controller, reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadCtrl || reloaded) { hadCtrl = true; return; }
+      reloaded = true; location.reload();
+    });
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(function (reg) {
+        function check() { reg.update().catch(function () {}); }
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+        setInterval(check, 30 * 60 * 1000);
+      }).catch(function () {});
+    });
   }
   var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   if (standalone || window.ReactNativeWebView) return;
