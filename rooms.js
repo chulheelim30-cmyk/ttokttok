@@ -372,7 +372,8 @@
       '그림 완성 시 2~3초 효과 + 방 사람 모두에게 알림',
       '베타 그림을 일러스트로 변경',
       '그림이 넘어갈 때 칸 순서가 바뀌던 오류 수정',
-      '새 버전이 나오면 자동으로 업데이트'
+      '새 버전이 나오면 자동으로 업데이트',
+      '노크방 목록에 마지막 접속 시간 표시'
     ] }
   ];
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -406,3 +407,11 @@
     if (seen !== VER) setTimeout(function () { if (!document.querySelector('.sheet.on')) open(); }, 2500);
   });
 })();
+
+// 노크방 목록: 노크 시간 옆에 마지막 접속(앱을 연) 시간
+window.__ttSeenLine = function (m, isMe) {
+  if (isMe || !m || !m.last_seen_at) return '';
+  var h = (Date.now() - Date.parse(m.last_seen_at)) / 36e5;
+  if (!(h >= 0)) return '';
+  return ' · 접속 ' + (h < 1 ? '방금 전' : h < 24 ? Math.floor(h) + '시간 전' : Math.floor(h / 24) + '일 전');
+};
