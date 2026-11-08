@@ -39,7 +39,7 @@
     var list = document.querySelectorAll('img[src*="/art/g"]:not([data-anim])');
     for (var i = 0; i < list.length; i++) {
       var img = list[i];
-      if (img.closest('.th') || img.closest('.tt-anim') || img.classList.contains('pv-blur')) continue;
+      if (img.closest('.th.blur') || img.closest('.tt-anim') || img.classList.contains('pv-blur')) continue;
       add(img);
     }
   }
