@@ -204,7 +204,7 @@
         '<button class="btn bp" style="margin-top:14px" id="realSave">저장하기</button>' +
         '<button class="btn bw" style="margin-top:8px" data-x>다음에 할게요</button>' +
         '<div class="t3" style="text-align:center;margin-top:8px">방장에게는 별명과 실명이 함께 보여요 · 노크방 관리에서 언제든 바꿀 수 있어요</div></div></div>';
-      document.body.appendChild(s);
+      (document.getElementById('app')||document.body).appendChild(s);
       Array.prototype.forEach.call(s.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { s.classList.remove('on'); }; });
       document.getElementById('realSave').onclick = save;
       Array.prototype.forEach.call(s.querySelectorAll('#realShowSeg button'), function (b) { b.onclick = function () { setPick(b.getAttribute('data-s') === '1'); }; });
@@ -287,7 +287,7 @@
         '<input class="inp" id="invRealInput" maxlength="20" autocomplete="name" placeholder="예: 홍길동 · 안 적어도 돼요">' +
         '<button class="btn bp" style="margin-top:12px" id="invGo">들어가기</button>' +
         '<button class="btn bw" style="margin-top:8px" data-x>그만두기</button></div></div>';
-      document.body.appendChild(s);
+      (document.getElementById('app')||document.body).appendChild(s);
       Array.prototype.forEach.call(s.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { s.classList.remove('on'); }; });
     }
     var nick = document.getElementById('myNameTxt');
@@ -410,7 +410,7 @@
       s.innerHTML = '<div class="dim" data-x></div><div class="pan"><div class="grab"></div>' +
         '<div class="top"><div class="logo" style="font-size:18px">업데이트 소식</div></div><div style="padding:0 18px" id="notesBody"></div>' +
         '<div style="padding:0 18px"><button class="btn bp" style="margin-top:14px" data-x>확인</button></div></div>';
-      document.body.appendChild(s);
+      (document.getElementById('app')||document.body).appendChild(s);
       Array.prototype.forEach.call(s.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { s.classList.remove('on'); }; });
     }
     document.getElementById('notesBody').innerHTML = NOTES.map(function (n) {

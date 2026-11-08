@@ -1,5 +1,5 @@
 /* 톡톡 테마 v1 — Gemini 첫 화면 느낌 (이 파일 링크를 지우면 원래 디자인) */
-:root{--bg:transparent;--line:#edf0f6;--grad:linear-gradient(90deg,#3b7bf6 0%,#8a6cf0 55%,#e9719f 100%)}
+:root{--line:#edf0f6;--grad:linear-gradient(90deg,#3b7bf6 0%,#8a6cf0 55%,#e9719f 100%)}
 html,body{background:#eef2f9}
 #app{background:linear-gradient(180deg,#fff 0%,#fff 50%,#f1f5ff 72%,#ece9ff 88%,#fdeef4 100%)}
 #app::after{content:"";position:absolute;left:-20%;right:-20%;bottom:-120px;height:320px;pointer-events:none;z-index:0;
