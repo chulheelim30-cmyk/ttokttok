@@ -106,10 +106,10 @@
   }
 
   // 앱을 열었다는 기록 (10분에 한 번만)
-  async function seen() {
+  async function seen(force) {
     if (document.hidden || !window.__ttRpc) return;
     var k = 'tt-seen-at-' + (me() || '');
-    if (Date.now() - +(LS(k) || 0) < 6e5) return;
+    if (force !== true && Date.now() - +(LS(k) || 0) < 6e5) return;
     LS(k, String(Date.now()));
     try { await window.__ttRpc('touch_seen', {}); } catch (e) {}
   }
@@ -121,7 +121,7 @@
     setTimeout(seen, 3000);
     // 앱을 껐다 켜지 않고 다시 볼 때도 접속 시각을 남겨요
     document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(seen, 1500); });
-    var aj = window.__ttAfterJoin; window.__ttAfterJoin = function (r) { if (aj) aj.apply(this, arguments); setTimeout(seen, 2000); };
+    var aj = window.__ttAfterJoin; window.__ttAfterJoin = function (r) { if (aj) aj.apply(this, arguments); setTimeout(function () { seen(true); }, 2000); };
   });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { setTimeout(seen, 1500); } });
 })();
