@@ -361,7 +361,7 @@
     if (!document.getElementById('ttCelCss')) { var st = document.createElement('style'); st.id = 'ttCelCss'; st.textContent = css; document.head.appendChild(st); }
     var d = document.createElement('div'); d.id = 'ttCel';
     d.innerHTML = '<div class="fr">' + artHtml + '<div class="sh"></div><div class="fl"></div></div>' +
-      '<div class="tx">모든 칸이 열렸어요!<small>노크방이 함께 완성한 ' + no + '번째 그림이에요</small></div>';
+      '<div class="tx">모든 조각이 맞춰졌어요!<small>노크방이 함께 완성한 ' + no + '번째 그림이에요</small></div>';
     d.onclick = done;
     document.body.appendChild(d);
     if (navigator.vibrate) try { navigator.vibrate([40, 40, 40, 40, 80]); } catch (e) {}
@@ -437,7 +437,7 @@
       '모든 기능 무료 (구독 없음)',
       '방장 관리 화면: 확인 필요한 사람이 위로, ‘확인 필요만’ 보기',
       '방 만들기 쉬워짐: 추천 이름 버튼, Enter로 바로 만들기',
-      '황금 칸은 그림의 마지막 칸 1개',
+      '황금 조각은 그림의 마지막 조각 1개',
       '그림 완성 시 2~3초 효과 + 방 사람 모두에게 알림',
       '베타 그림을 일러스트로 변경',
       '그림이 넘어갈 때 칸 순서가 바뀌던 오류 수정',
@@ -750,7 +750,7 @@ window.__ttSeenLine = function (m, isMe) {
     var esc = function (s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
     sh.innerHTML = '<div class="dim" data-x></div><div class="pan" style="text-align:center"><div class="grab"></div>' +
       '<div style="font-size:44px;margin:6px 0 2px">🎉</div><div class="logo" style="font-size:20px;justify-content:center;text-align:center">우리 그림이 완성됐어요!</div>' +
-      '<div class="t2" style="margin:8px 18px 4px;line-height:1.55">‘' + esc(r.name) + '’ 식구들이 한 달 동안 30칸을 함께 채웠어요.<br>풍년이가 이제 움직여요 · 그림첩에서도 만날 수 있어요</div>' +
+      '<div class="t2" style="margin:8px 18px 4px;line-height:1.55">‘' + esc(r.name) + '’ 식구들이 한 달 동안 30조각을 함께 맞췄어요.<br>풍년이가 이제 움직여요 · 그림첩에서도 만날 수 있어요</div>' +
       '<div style="padding:12px 18px 6px"><button class="btn bp" data-x>풍년이 보러 가기</button></div></div>';
     (document.getElementById('app') || document.body).appendChild(sh);
     Array.prototype.forEach.call(sh.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { sh.classList.remove('on'); setTimeout(function () { sh.remove(); }, 400); }; });

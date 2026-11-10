@@ -1,8 +1,8 @@
-/* 퍼즐 그림판: 30칸(6x5)을 직소 퍼즐 조각 모양으로 보여 줘요.
-   번들의 J()가 #board 안에 그림 + .grid(30칸)를 그리면, 그 사이에 퍼즐 SVG를 끼워 넣어요.
-   - 아직 안 연 조각: 판 색으로 덮고 점선 테두리 (조각 모양 그대로)
-   - 연 조각: 그림이 보이고 흰 테두리 + 살짝 그림자
-   - 방금 연 조각(.flash): 덮개가 스르르 사라지며 맞춰지는 연출
+/* 퍼즐 그림판: 30조각(6x5)을 직소 퍼즐 조각 모양으로 보여 줘요.
+   번들의 J()가 #board 안에 그림 + .grid(30조각)를 그리면, 그 사이에 퍼즐 SVG를 끼워 넣어요.
+   - 아직 안 연 조각: 두꺼운 종이 조각처럼 도드라짐 (빛 받는 왼쪽 위 + 오른쪽 아래 그늘 + 바닥 그림자)
+   - 연 조각: 그림 위에 얇은 경계 음영만 남아 '맞춰진 퍼즐'처럼 보임
+   - 방금 연 조각(.flash): 덮개 조각이 들려 올라가며 사라지는 연출 (11/10 입체)
    조각 모양은 그림 번호(month)마다 고정이라 날마다 같은 퍼즐이에요. */
 (function () {
   var COLS = 6, ROWS = 5, S = 100, W = COLS * S, H = ROWS * S;
@@ -56,14 +56,34 @@
     '#board>svg.pz{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}' +
     '#board .grid .c{background:transparent!important}' +
     '#board .grid div{border:0!important}' +
+    '#board .grid .c svg{display:none!important}' +
     '#board .grid .open.gold{box-shadow:none!important}' +
-    '.pz .cv{fill:#e8eef8;stroke:#c3cfe6;stroke-width:1.6;stroke-dasharray:5 4}' +
-    '.pz .op{fill:none;stroke:rgba(255,255,255,.9);stroke-width:1.6}' +
-    '.pz .gd{fill:none;stroke:#ffd34d;stroke-width:3.2}' +
-    '.pz .sh{filter:drop-shadow(0 1.5px 1.5px rgba(30,45,90,.35))}' +
-    '.pz .nw{fill:#e8eef8;animation:pzin 1.1s ease-out forwards}' +
-    '@keyframes pzin{0%{opacity:1}100%{opacity:0}}';
+    '.pz .cv path{fill:url(#pzG);stroke:#b9c6e0;stroke-width:1;filter:url(#pzC)}' +
+    '.pz .op path{fill:#000;filter:url(#pzO)}' +
+    '.pz .gd{fill:none;stroke:#ffd34d;stroke-width:3.2;filter:drop-shadow(0 0 3px rgba(255,200,40,.8))}' +
+    '.pz .nw{fill:url(#pzG);filter:url(#pzC);transform-box:fill-box;transform-origin:50% 50%;animation:pzin 1.1s ease-in forwards}' +
+    '@keyframes pzin{0%{opacity:1;transform:none}35%{opacity:1;transform:translateY(-6px) scale(1.08)}100%{opacity:0;transform:translateY(-14px) scale(1.18)}}';
   document.head.appendChild(css);
+
+  // 입체 효과: 조각 안쪽 가장자리에 빛(왼쪽 위)과 그늘(오른쪽 아래)
+  function bevel(id, depth, keep) {
+    return '<filter id="' + id + '" x="-5%" y="-5%" width="110%" height="115%">' +
+      '<feGaussianBlur in="SourceAlpha" stdDeviation="' + depth + '" result="b"/>' +
+      '<feOffset in="b" dx="' + depth + '" dy="' + depth + '" result="ol"/>' +
+      '<feComposite in="SourceAlpha" in2="ol" operator="out" result="lt"/>' +
+      '<feFlood flood-color="#fff" flood-opacity="' + (keep ? .85 : .55) + '"/><feComposite in2="lt" operator="in" result="hi"/>' +
+      '<feOffset in="b" dx="-' + depth + '" dy="-' + depth + '" result="od"/>' +
+      '<feComposite in="SourceAlpha" in2="od" operator="out" result="dk"/>' +
+      '<feFlood flood-color="#1e2d5a" flood-opacity="' + (keep ? .32 : .38) + '"/><feComposite in2="dk" operator="in" result="lo"/>' +
+      (keep ? '<feGaussianBlur in="SourceAlpha" stdDeviation="2.2"/><feOffset dy="3" result="ds"/>' +
+        '<feFlood flood-color="#1e2d5a" flood-opacity=".28"/><feComposite in2="ds" operator="in" result="sd"/>' +
+        '<feMerge><feMergeNode in="sd"/><feMergeNode in="SourceGraphic"/><feMergeNode in="lo"/><feMergeNode in="hi"/></feMerge>'
+        : '<feMerge><feMergeNode in="lo"/><feMergeNode in="hi"/></feMerge>') +
+      '</filter>';
+  }
+  var DEFS = '<defs><linearGradient id="pzG" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="#f6f8fd"/><stop offset="1" stop-color="#d9e2f2"/></linearGradient>' +
+    bevel('pzC', 4, true) + bevel('pzO', 2.5, false) + '</defs>';
 
   var last = '';
   function draw() {
@@ -85,10 +105,10 @@
         op += '<path d="' + P[i] + '"/>';
         if (c.contains('gold')) gd += '<path class="gd" d="' + P[i] + '"/>';
         if (c.contains('flash')) nw += '<path class="nw" d="' + P[i] + '"/>';
-      } else cv += '<path class="cv" d="' + P[i] + '"/>';
+      } else cv += '<path d="' + P[i] + '"/>';
     }
-    var svg = '<svg class="pz" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
-      '<g class="sh"><g class="op">' + op + '</g></g>' + nw + cv + gd + '</svg>';
+    var svg = '<svg class="pz" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + DEFS +
+      '<g class="op">' + op + '</g><g class="cv">' + cv + '</g>' + nw + gd + '</svg>';
     if (old) old.remove();
     grid.insertAdjacentHTML('beforebegin', svg);
   }
