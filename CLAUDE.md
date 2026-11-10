@@ -16,8 +16,8 @@
 ## 파일
 - `index.html`: 화면 전부 + 인라인 스타일. 현재 번들·CSS 파일명을 참조.
 - `app-<hash>.js`: 빌드된 앱(원본 소스 없음, 직접 패치). `app-21865120.css`.
-- 보조 스크립트(번들 밖, 읽기 쉬움): `push.js`(웹푸시 켜기/테스트), `mood.js`(오늘 컨디션·앱 연 시각), `rooms.js`(방 종류·인원, 그림 미리보기, 방장 전용 실명), `account.js`(탈퇴), `back.js`(뒤로가기), `pwa.js`, `anim.js`(풍년이 깜빡임·그림 완성 축하), `theme.css`.
-- 현재 버전(바뀌면 여기 고치기): rooms.js?v=22 · mood.js?v=4 · anim.js?v=9 · theme.css?v=7 · push/account v1.
+- 보조 스크립트(번들 밖, 읽기 쉬움): `push.js`(웹푸시 켜기/테스트), `mood.js`(오늘 컨디션·앱 연 시각), `rooms.js`(방 종류·인원, 그림 미리보기, 방장 전용 실명), `account.js`(탈퇴), `kakao.js`(카톡 등 앱 안 브라우저 → 크롬/사파리로 열기, 번들보다 먼저 실행), `back.js`(뒤로가기), `pwa.js`, `anim.js`(풍년이 깜빡임·그림 완성 축하), `theme.css`.
+- 현재 버전(바뀌면 여기 고치기): rooms.js?v=22 · mood.js?v=4 · anim.js?v=9 · theme.css?v=7 · push/account v1 · kakao.js?v=1.
 - `sw.js`: 서비스워커. SHELL 목록 + 캐시 이름 `ttokttok-YYYYMMDDHHMM`(patch.py가 자동 갱신) + push/notificationclick.
 - `privacy.html`: 개인정보처리방침(항목 추가 시 같이 고치기).
 - `art/`: 공개 그림만. **개인 사진은 저장소에 절대 넣지 않기** (Supabase 비공개 버킷 `beta-art`).
@@ -34,6 +34,7 @@
 - 테이블: rooms(room_type family|crew|group, max_members 2~30), members(threshold_hours, paused, last_knock_at, last_seen_at), knocks(day, mood 1~3, mood_at), extra_knocks, nudges(pushed_at), golden_wins, profiles(plus), invites, room_bans, push_subs, push_log, _push_config(VAPID·cron 비밀), member_real_names(방장 전용, 별도 보관), operators, room_admins(방장 포함 최대 3명, 방장과 같은 권한), 계정 이어하기 코드(transfer_code, 기기 바꿀 때).
 - 그 밖: 운영자에게만 'Claude 점검 보고' 표시, 업데이트 소식(베타4.1), 그림 완성 시 축하 연출.
 - 주요 RPC: do_knock, knock_all, create_room_v2, join_room, accept_invite, update_room_settings, set_mood, touch_seen, save/remove_push_sub, set_real_name, my_real_name, room_real_names, room_golden, am_operator, _push_claim(서버 전용), _ops_daily_stats_v2(아침 리포트), _lonely_rooms.
+- 그림 진행: `rooms.pic_count`(노크 들어올 때만 +1, 줄지 않음) → RPC `room_pic_count`. knocks 줄 수로 세지 말 것(나가기·내보내기에서 지워짐).
 - 트리거: members_before_insert(인원 한도·크루 72시간), _golden_after_knock(황금 칸 그림당 1칸).
 - 엣지 함수: `push`(cron 1분마다 tick: 알림 발송 + 10분마다 혼자 24시간 방 정리, test, key), `account`(탈퇴). 둘 다 verify_jwt=false, 자체 인증.
 - cron: `ttok-push-tick` (pg_cron + pg_net, 매분).
