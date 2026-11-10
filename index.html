@@ -26,7 +26,7 @@
 <script src="./back.js?v=2" defer></script>
 <script src="./push.js?v=2" defer></script>
 <script src="./mood.js?v=5" defer></script>
-<script src="./rooms.js?v=22" defer></script>
+<script src="./rooms.js?v=23" defer></script>
 <script src="./account.js?v=1" defer></script>
 <script src="./anim.js?v=9" defer></script>
 <style>
@@ -218,6 +218,7 @@ html,body{background:#ece6da;color:var(--ink)}
 <div class="set"><div><div class="t1" style="font-size:14px">노크 소리</div><div class="t3" id="soundSetTxt">물방울 · 가까운 사람 휴대폰에서도 이 소리로 울려요</div></div><div class="sp"></div><button class="mini bs" onclick="openSound()">고르기</button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">잠시 멈춤</div><div class="t3">여행·입원 때 노크방에 ‘잠시 멈춤’으로 보여요</div></div><div class="sp"></div><button class="sw" id="pauseSw" onclick="togglePause()"></button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">내 전화번호</div><div class="t3" id="phoneTxt">등록 안 함 · 친구 찾기·초대에 써요</div></div><div class="sp"></div><button class="mini bs" onclick="openPhone()">등록</button></div>
+<div class="set"><div><div class="t1" style="font-size:14px">내 계정 지키기 (전화번호)</div><div class="t3" id="loginSetTxt">앱을 지워도 번호와 비밀번호로 다시 찾아요</div></div><div class="sp"></div><button class="mini bs" id="loginSetBtn" onclick="ttLogin('set')">등록</button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">계정 이어하기</div><div class="t3">앱을 새로 깔거나 폰을 바꿔도 노크방·기록을 그대로</div></div><div class="sp"></div><button class="mini bs" onclick="ttTransfer()">열기</button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">내 노크방</div><div class="t3">노크방 고르기 · 새로 만들기 · 코드로 들어가기</div></div><div class="sp"></div><button class="mini bs" onclick="openRooms()">열기</button></div>
 <div class="set"><div><div class="t1" style="font-size:14px">톡톡 이야기</div><div class="t3">쓰는 법 · 만든 이유 · 풍년이 이모티콘</div></div><div class="sp"></div><button class="mini bs" onclick="document.getElementById('aboutSheet').classList.add('on')">보기</button></div>
@@ -446,7 +447,7 @@ html,body{background:#ece6da;color:var(--ink)}
 <div style="display:none"><input id="onbPhone" inputmode="tel" autocomplete="tel"></div>
 <button class="btn" id="onbPrimary" style="background:#ffd34d;color:var(--navy);margin-top:16px" onclick="startApp('create')">새 노크방 만들기</button>
 <button class="btn" id="onbSecondary" style="background:rgba(255,255,255,.14);color:#fff;margin-top:10px" onclick="startApp('code')">초대받았어요 · 코드로 들어가기</button>
-<button class="btn" style="background:transparent;color:#fff;margin-top:6px;font-size:14px;text-decoration:underline" onclick="ttTransfer(true)">예전에 쓰던 계정이 있어요 · 이어하기</button>
+<button class="btn" style="background:transparent;color:#fff;margin-top:6px;font-size:14px;text-decoration:underline" onclick="ttLogin('find')">예전에 쓰던 계정이 있어요 · 전화번호로 찾기</button>
 <div class="t3" style="color:#b9cbe3;margin-top:16px;text-align:center">초대 링크를 받았다면 링크를 눌러 열면 바로 들어갈 수 있어요</div>
 </div>
 </div>

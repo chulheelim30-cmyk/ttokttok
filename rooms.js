@@ -758,3 +758,114 @@ window.__ttSeenLine = function (m, isMe) {
   setInterval(check, 2000);
   document.addEventListener('visibilitychange', check);
 })();
+
+// ── 내 계정 지키기: 전화번호 + 비밀번호 6자리로 등록 → 앱을 지우고 다시 깔아도 찾기 ──
+(function () {
+  var LS = function (k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+  function toast(t) { var e = document.getElementById('toast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { e.classList.remove('on'); }, 2800); }
+  function msg(e) { return (e && e.message || '잠시 뒤 다시 해 주세요').replace(/^[A-Z_]+:\s*/, ''); }
+  var IN = 'width:100%;font-size:19px;padding:13px 14px;border-radius:14px;border:1px solid var(--line);font-family:inherit;margin-bottom:8px;box-sizing:border-box';
+  var state = null; // {set, tail}
+  function load() {
+    if (!window.__ttRpc) return Promise.resolve(null);
+    return window.__ttRpc('my_login', {}).then(function (r) { state = r || { set: false }; paint(); return state; }).catch(function () { return null; });
+  }
+  function paint() {
+    var t = document.getElementById('loginSetTxt'); if (!t || !state) return;
+    t.textContent = state.set ? '등록했어요 · 번호 끝자리 ' + state.tail : '아직 안 했어요 · 앱을 지우면 계정을 못 찾아요';
+    t.style.color = state.set ? '' : '#c0533f';
+    var b = document.getElementById('loginSetBtn'); if (b) b.textContent = state.set ? '바꾸기' : '등록';
+  }
+  function sheet() {
+    var sh = document.getElementById('loginSheet'); if (sh) return sh;
+    sh = document.createElement('div'); sh.className = 'sheet'; sh.id = 'loginSheet';
+    sh.innerHTML = '<div class="dim" data-x></div><div class="pan"><div class="grab"></div><div class="top"><div class="logo" style="font-size:18px" id="lgTitle"></div></div><div style="padding:0 18px 6px">' +
+      '<div class="t3" id="lgSub" style="margin:-4px 0 12px;line-height:1.55"></div>' +
+      '<input id="lgPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="휴대폰 번호 (010-1234-5678)" style="' + IN + '">' +
+      '<input id="lgPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="비밀번호 숫자 6자리" style="' + IN + 'letter-spacing:4px">' +
+      '<input id="lgPin2" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="비밀번호 한 번 더" style="' + IN + 'letter-spacing:4px">' +
+      '<button class="btn bp" id="lgGo" style="margin-top:4px"></button>' +
+      '<button class="btn bw" id="lgAlt" style="margin-top:8px;font-size:13.5px"></button>' +
+      '<button class="btn bw" style="margin-top:6px" data-x>닫기</button></div></div>';
+    (document.getElementById('app') || document.body).appendChild(sh);
+    Array.prototype.forEach.call(sh.querySelectorAll('[data-x]'), function (b) { b.onclick = function () { sh.classList.remove('on'); }; });
+    ['lgPin', 'lgPin2'].forEach(function (id) { document.getElementById(id).addEventListener('input', function () { this.value = this.value.replace(/\D/g, '').slice(0, 6); }); });
+    return sh;
+  }
+  function afterClaim(res) {
+    try {
+      var KEY = 'ttokttok-proto-v1', z = JSON.parse(localStorage.getItem(KEY) || '{}') || {};
+      var r = res.room || null, m = res.member || {};
+      if (m.name) z.name = String(m.name).slice(0, 8);
+      if (r && r.id) { z.roomId = r.id; z.roomCode = r.code; z.roomName = r.name; z.started = true; }
+      localStorage.setItem(KEY, JSON.stringify(z));
+    } catch (e) {}
+    toast('내 계정을 찾았어요 · 노크방 ' + (res.rooms || 0) + '개');
+    setTimeout(function () { location.reload(); }, 900);
+  }
+  window.ttLogin = function (mode) {
+    var sh = sheet(), find = mode === 'find';
+    var la = document.getElementById('loginAsk'); if (la) la.remove();
+    document.getElementById('lgTitle').textContent = find ? '전화번호로 내 계정 찾기' : '내 계정 지키기';
+    document.getElementById('lgSub').innerHTML = find
+      ? '예전에 등록한 휴대폰 번호와 비밀번호 6자리를 넣으면 노크방·기록을 그대로 불러와요.'
+      : '휴대폰 번호와 비밀번호 6자리를 등록해 두면, <b>앱을 지우거나 폰을 바꿔도</b> 첫 화면의 ‘내 계정 찾기’로 그대로 돌아올 수 있어요.<br>번호는 알아볼 수 없게 바꿔서 보관하고, 계정 찾기에만 써요.';
+    document.getElementById('lgPin2').style.display = find ? 'none' : '';
+    ['lgPhone', 'lgPin', 'lgPin2'].forEach(function (id) { document.getElementById(id).value = ''; });
+    var go = document.getElementById('lgGo'), alt = document.getElementById('lgAlt');
+    go.textContent = find ? '내 계정 찾기' : '등록하기'; go.disabled = false;
+    alt.textContent = find ? '예전 폰에서 만든 이어하기 코드가 있어요' : '비밀번호를 잊었다면: 지금 새로 등록하면 바뀌어요';
+    alt.style.display = find ? '' : 'none';
+    alt.onclick = function () { sh.classList.remove('on'); window.ttTransfer && window.ttTransfer(true); };
+    go.onclick = function () {
+      var ph = document.getElementById('lgPhone').value, p1 = document.getElementById('lgPin').value, p2 = document.getElementById('lgPin2').value;
+      if (ph.replace(/\D/g, '').length < 10) { toast('휴대폰 번호를 넣어 주세요'); return; }
+      if (!/^\d{6}$/.test(p1)) { toast('비밀번호는 숫자 6자리예요'); return; }
+      if (!find && p1 !== p2) { toast('비밀번호가 서로 달라요'); return; }
+      if (!window.__ttRpc) { toast('잠시 뒤 다시 눌러 주세요'); return; }
+      go.disabled = true;
+      if (find) {
+        window.__ttRpc('claim_login', { p_phone: ph, p_pin: p1 }).then(function (res) {
+          res = res || {};
+          if (!res.ok) { go.disabled = false; toast(res.msg || '찾지 못했어요'); return; }
+          if (res.same) { go.disabled = false; sh.classList.remove('on'); toast('이미 이 계정이에요'); return; }
+          afterClaim(res);
+        }).catch(function (e) { go.disabled = false; toast(msg(e)); });
+      } else {
+        window.__ttRpc('set_login', { p_phone: ph, p_pin: p1 }).then(function (res) {
+          state = { set: true, tail: res && res.tail }; paint(); LS('tt-login-set', '1');
+          sh.classList.remove('on'); toast('등록했어요 · 앱을 지워도 이 번호로 찾을 수 있어요');
+        }).catch(function (e) { go.disabled = false; toast(msg(e)); });
+      }
+    };
+    sh.classList.add('on');
+    setTimeout(function () { var i = document.getElementById('lgPhone'); i && i.focus(); }, 250);
+  };
+
+  // 아직 등록 안 한 사람에게 하루 한 번 권해요 (새로 들어온 사람은 입장 직후에도)
+  function nudge(force) {
+    if (LS('tt-login-set') || !window.__ttRoom || !window.__ttRoom.id) return;
+    var day = new Date().toDateString();
+    if (!force && LS('tt-login-ask-day') === day) return;
+    if (document.querySelector('.sheet.on') || document.getElementById('pushAsk')) { setTimeout(function () { nudge(force); }, 8000); return; }
+    load().then(function (s) {
+      if (!s) return;
+      if (s.set) { LS('tt-login-set', '1'); return; }
+      LS('tt-login-ask-day', day);
+      var d = document.createElement('div'); d.id = 'loginAsk';
+      d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:91;background:#fff;color:#23324a;border:2px solid #23324a;border-radius:16px;padding:14px 16px;box-shadow:0 6px 18px rgba(35,50,74,.18);font-size:13.5px;line-height:1.55;font-family:inherit';
+      d.innerHTML = '<div style="font-weight:800;font-size:15px;margin-bottom:2px">내 계정을 지켜 주세요</div>휴대폰 번호와 비밀번호 6자리를 등록하면, 앱을 지우거나 폰을 바꿔도 노크방·기록을 그대로 찾을 수 있어요.' +
+        '<div style="display:flex;gap:8px;margin-top:10px"><button id="loginAskNo" style="flex:1;border:1.5px solid #c9cfd8;background:#fff;border-radius:12px;padding:10px;font:inherit;color:#5a6577">나중에</button>' +
+        '<button id="loginAskYes" style="flex:2;border:0;background:#14284b;color:#fff;border-radius:12px;padding:10px;font:inherit;font-weight:800">지금 등록</button></div>';
+      document.body.appendChild(d);
+      document.getElementById('loginAskNo').onclick = function () { d.remove(); };
+      document.getElementById('loginAskYes').onclick = function () { d.remove(); window.ttLogin('set'); };
+    });
+  }
+  window.addEventListener('load', function () {
+    setTimeout(load, 2500);
+    setTimeout(function () { nudge(false); }, 9000);
+    var aj = window.__ttAfterJoin;
+    window.__ttAfterJoin = function () { if (aj) aj.apply(this, arguments); LS('tt-login-ask-day', ''); setTimeout(function () { nudge(true); }, 7000); };
+  });
+})();

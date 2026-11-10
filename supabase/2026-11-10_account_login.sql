@@ -1,0 +1,4 @@
+-- 내 계정 지키기: 전화번호 + 비밀번호 6자리 (앱 재설치·기기 변경 후 계정 찾기)
+-- account_logins(user_id pk → auth.users on delete cascade, phone_hash unique sha256('ttok-login:'+번호), phone_tail, pin_hash bcrypt, fails, locked_until)
+-- RPC: set_login(p_phone,p_pin) · my_login() · claim_login(p_phone,p_pin) → 5번 틀리면 15분 잠금, 맞으면 내부 이어하기 코드로 claim_transfer_code 재사용
+-- 같은 날: 트리거 함수 실행권한 회수, 보안 definer 함수 anon 실행 회수(authenticated만)
