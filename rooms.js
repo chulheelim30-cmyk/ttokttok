@@ -837,6 +837,17 @@ window.__ttSeenLine = function (m, isMe) {
     toast('내 계정을 찾았어요 · 노크방 ' + (res.rooms || 0) + '개');
     setTimeout(function () { location.reload(); }, 900);
   }
+  // 처음 화면인데 서버엔 이 계정의 노크방이 있으면 바로 들어가요 (계정 찾기 뒤 화면이 못 넘어간 경우)
+  function autoEnter(n) {
+    var onb = document.getElementById('f-onb');
+    if (!onb || !onb.classList.contains('on')) return;
+    if (!window.__ttRpc || !localStorage.getItem('ttokttok-auth-v1')) { if (n < 10) setTimeout(function () { autoEnter(n + 1); }, 800); return; }
+    try { if (sessionStorage.getItem('tt-auto-enter')) return; } catch (e) {}
+    window.__ttRpc('my_room', {}).then(function (res) {
+      if (res && res.room && res.room.id) { try { sessionStorage.setItem('tt-auto-enter', '1'); } catch (e) {} afterClaim(res); }
+    }).catch(function () {});
+  }
+  window.addEventListener('load', function () { setTimeout(function () { autoEnter(0); }, 1200); });
   window.ttLogin = function (mode) {
     var sh = sheet(), find = mode === 'find';
     var la = document.getElementById('loginAsk'); if (la) la.remove();
