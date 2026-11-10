@@ -1,8 +1,8 @@
 /* 퍼즐 그림판: 30조각(6x5)을 직소 퍼즐 조각 모양으로 보여 줘요.
    번들의 J()가 #board 안에 그림 + .grid(30조각)를 그리면, 그 사이에 퍼즐 SVG를 끼워 넣어요.
-   - 아직 안 연 조각: 두꺼운 종이 조각처럼 도드라짐 (빛 받는 왼쪽 위 + 오른쪽 아래 그늘 + 바닥 그림자)
-   - 연 조각: 그림 위에 얇은 경계 음영만 남아 '맞춰진 퍼즐'처럼 보임
-   - 방금 연 조각(.flash): 덮개 조각이 들려 올라가며 사라지는 연출 (11/10 입체)
+   - 채우는 중: 평면 (안 연 조각은 납작한 덮개, 연 조각은 얇은 선만)
+   - 30조각 다 맞추면(.done): 연 조각 경계에 빛·그늘이 생겨 입체 퍼즐로 보임
+   - 방금 연 조각(.flash): 덮개 조각이 들려 올라가며 사라지는 연출
    조각 모양은 그림 번호(month)마다 고정이라 날마다 같은 퍼즐이에요. */
 (function () {
   var COLS = 6, ROWS = 5, S = 100, W = COLS * S, H = ROWS * S;
@@ -58,10 +58,11 @@
     '#board .grid div{border:0!important}' +
     '#board .grid .c svg{display:none!important}' +
     '#board .grid .open.gold{box-shadow:none!important}' +
-    '.pz .cv path{fill:url(#pzG);stroke:#b9c6e0;stroke-width:1;filter:url(#pzC)}' +
-    '.pz .op path{fill:#000;filter:url(#pzO)}' +
+    '.pz .cv path{fill:#e8edf7;stroke:#b9c6e0;stroke-width:1}' +
+    '.pz .op path{fill:none;stroke:rgba(30,45,90,.16);stroke-width:1}' +
+    '.pz.done .op path{fill:#000;stroke:none;filter:url(#pzO)}' +
     '.pz .gd{fill:none;stroke:#ffd34d;stroke-width:3.2;filter:drop-shadow(0 0 3px rgba(255,200,40,.8))}' +
-    '.pz .nw{fill:url(#pzG);filter:url(#pzC);transform-box:fill-box;transform-origin:50% 50%;animation:pzin 1.1s ease-in forwards}' +
+    '.pz .nw{fill:#e8edf7;stroke:#b9c6e0;stroke-width:1;transform-box:fill-box;transform-origin:50% 50%;animation:pzin 1.1s ease-in forwards}' +
     '@keyframes pzin{0%{opacity:1;transform:none}35%{opacity:1;transform:translateY(-6px) scale(1.08)}100%{opacity:0;transform:translateY(-14px) scale(1.18)}}';
   document.head.appendChild(css);
 
@@ -83,7 +84,7 @@
   }
   var DEFS = '<defs><linearGradient id="pzG" x1="0" y1="0" x2="1" y2="1">' +
     '<stop offset="0" stop-color="#f6f8fd"/><stop offset="1" stop-color="#d9e2f2"/></linearGradient>' +
-    bevel('pzC', 4, true) + bevel('pzO', 2.5, false) + '</defs>';
+    bevel('pzO', 3.5, false) + '</defs>';
 
   var last = '';
   function draw() {
@@ -107,7 +108,8 @@
         if (c.contains('flash')) nw += '<path class="nw" d="' + P[i] + '"/>';
       } else cv += '<path d="' + P[i] + '"/>';
     }
-    var svg = '<svg class="pz" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + DEFS +
+    var done = cv === '';
+    var svg = '<svg class="pz' + (done ? ' done' : '') + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + DEFS +
       '<g class="op">' + op + '</g><g class="cv">' + cv + '</g>' + nw + gd + '</svg>';
     if (old) old.remove();
     grid.insertAdjacentHTML('beforebegin', svg);
