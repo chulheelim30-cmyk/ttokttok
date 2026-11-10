@@ -34,6 +34,7 @@
     var j = sub.toJSON();
     await rpc('save_push_sub', { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_ua: ua.slice(0, 200) });
     LS('tt-push-saved', String(Date.now()));
+    LS('tt-push-user', String((window.__ttMe && window.__ttMe()) || ''));
   }
 
   async function enable() {
@@ -90,7 +91,7 @@
   function maybeAsk() {
     if (why() || Notification.permission !== 'default') return;
     var n = +(LS('tt-push-ask') || 0), day = new Date().toDateString();
-    if (n >= 3 || LS('tt-push-ask-day') === day || document.getElementById('pushAsk')) return;
+    if (n >= 5 || LS('tt-push-ask-day') === day || document.getElementById('pushAsk')) return;
     LS('tt-push-ask', String(n + 1)); LS('tt-push-ask-day', day);
     var d = document.createElement('div');
     d.id = 'pushAsk';
@@ -113,9 +114,15 @@
     // 알림이 켜져 있으면 하루에 한 번 서버 등록을 새로 고쳐요 (계정이 바뀌어도 이어지게)
     setTimeout(async function () {
       try {
-        if (why() || Notification.permission !== 'granted') return;
-        var s = await currentSub(); if (!s) { render(); return; }
-        if (Date.now() - +(LS('tt-push-saved') || 0) > 864e5) await save(s);
+        if (why()) return;
+        if (Notification.permission === 'default') { maybeAsk(); return; }
+        if (Notification.permission !== 'granted') return;
+        // 허락은 돼 있는데 등록이 없거나(앱 재설치·만료), 계정이 바뀌었으면 조용히 다시 등록해요
+        var me = window.__ttMe && window.__ttMe(), s = await currentSub();
+        if (!s) { var reg = await navigator.serviceWorker.ready; s = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(KEY) }); }
+        if (!s) return;
+        if (Date.now() - +(LS('tt-push-saved') || 0) > 6 * 3600e3 || LS('tt-push-user') !== String(me || '')) { await save(s); LS('tt-push-user', String(me || '')); }
+        render();
       } catch (e) {}
     }, 4000);
     var pung = document.getElementById('pung');
