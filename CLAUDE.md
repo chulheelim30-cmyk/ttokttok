@@ -70,4 +70,5 @@
 - 복지관·지자체 공략 가이드: https://claude.ai/artifact/EZsGZx62bP4vopEtEv8L2z
 - 주간 브리핑 예약 작업: trig_016BvAzhLMYihQHtQ5XS1DqW (매주 금 17:50 KST, ops_daily 조회만). 예전 아침 리포트는 없어짐.
 - 지표 기록: `ops_daily(day, stats jsonb)` — cron `ttok-ops-daily` 매일 00:10 KST에 전날 `_ops_daily_stats_v2` + `app_openers` 저장(11/4부터). `seen_days(user_id, day)` — touch_seen 때 날마다 앱 연 사람 기록(11/10부터, 이전은 마지막 접속만).
-- 운영자 계정 user_id: cdc8fd6d-763c-4c5e-99ee-c86b2aa03163
+- 운영자 계정 user_id: c4b1891f-6156-469b-8389-224f4fac2d00 (11/11 확인, operators 표 기준. 예전 cdc8fd6d…)
+- 데모 노크방(11/11, 코드 042295): 운영자 + 가상 20명. `_demo_rooms`·`_demo_members`(user_id, knock_min, every_days, mood_low_pct), cron `ttok-demo-tick` 10분마다 `_demo_tick()`가 정해진 시각에 대신 노크(며칠 걸러 노크하는 사람도 있어 주의·확인 필요가 돌아가며 생김). 데모방은 _push_claim(대상·원인)과 _ops_daily_stats·v2 통계에서 모두 빠짐. 가상 인물은 auth 계정 없음.
