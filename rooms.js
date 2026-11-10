@@ -775,6 +775,40 @@ window.__ttSeenLine = function (m, isMe) {
     t.textContent = state.set ? '등록했어요 · 번호 끝자리 ' + state.tail : '아직 안 했어요 · 앱을 지우면 계정을 못 찾아요';
     t.style.color = state.set ? '' : '#c0533f';
     var b = document.getElementById('loginSetBtn'); if (b) b.textContent = state.set ? '바꾸기' : '등록';
+    logoutRow();
+  }
+  // 로그아웃: 전화번호를 등록한 사람에게만 보여요 (등록 안 하면 계정을 잃어서)
+  function logoutRow() {
+    var row = document.getElementById('logoutRow'), host = b0();
+    if (!host) return;
+    if (!state || !state.set) { if (row) row.remove(); return; }
+    if (row) return;
+    row = document.createElement('div'); row.className = 'set'; row.id = 'logoutRow';
+    row.innerHTML = '<div><div class="t1" style="font-size:14px">로그아웃</div><div class="t3" id="logoutTxt">이 폰에서 나가요 · 번호와 비밀번호로 다시 들어올 수 있어요</div></div><div class="sp"></div><button class="mini bs" id="logoutBtn">로그아웃</button>';
+    host.parentNode.insertBefore(row, host.nextSibling);
+    var btn = document.getElementById('logoutBtn');
+    btn.onclick = function () {
+      if (!btn.__armed) { btn.__armed = true; btn.textContent = '한 번 더 누르기'; btn.style.background = '#c0392b'; btn.style.color = '#fff'; setTimeout(function () { btn.__armed = false; btn.textContent = '로그아웃'; btn.style.background = ''; btn.style.color = ''; }, 3000); return; }
+      btn.disabled = true; btn.textContent = '나가는 중…';
+      logout();
+    };
+  }
+  function b0() { var b = document.getElementById('loginSetBtn'); return b && b.closest('.set'); }
+  async function logout() {
+    // 이 폰으로 알림이 더 오지 않게 등록을 지워요
+    try {
+      var reg = navigator.serviceWorker && await Promise.race([navigator.serviceWorker.ready, new Promise(function (r) { setTimeout(r, 1500); })]);
+      var sub = reg && reg.pushManager && await reg.pushManager.getSubscription();
+      if (sub) { await window.__ttRpc('remove_push_sub', { p_endpoint: sub.endpoint }).catch(function () {}); await sub.unsubscribe().catch(function () {}); }
+    } catch (e) {}
+    try {
+      var ks = []; for (var i = 0; i < localStorage.length; i++) ks.push(localStorage.key(i));
+      ks.forEach(function (k) { if (/^(ttokttok|tt-|sb-)/.test(k)) localStorage.removeItem(k); });
+      // 나가는 동안 앱이 예전 정보를 다시 저장하지 못하게 막아요
+      Storage.prototype.setItem = function () {};
+    } catch (e) {}
+    toast('로그아웃했어요');
+    setTimeout(function () { location.replace(location.pathname); }, 700);
   }
   function sheet() {
     var sh = document.getElementById('loginSheet'); if (sh) return sh;
