@@ -1,7 +1,7 @@
 /* 퍼즐 그림판: 30조각(6x5)을 직소 퍼즐 조각 모양으로 보여 줘요.
    번들의 J()가 #board 안에 그림 + .grid(30조각)를 그리면, 그 사이에 퍼즐 SVG를 끼워 넣어요.
-   - 채우는 중: 평면 (안 연 조각은 납작한 덮개, 연 조각은 얇은 선만)
-   - 30조각 다 맞추면(.done): 연 조각 경계에 빛·그늘이 생겨 입체 퍼즐로 보임
+   - 안 연 조각: 연한 평면 덮개 (눈에 안 띄게)
+   - 맞춘 조각만 강조: 굵은 테두리 + 빛·그늘 입체 + 덮개 위로 그림자 (실제 퍼즐처럼)
    - 방금 연 조각(.flash): 덮개 조각이 들려 올라가며 사라지는 연출
    조각 모양은 그림 번호(month)마다 고정이라 날마다 같은 퍼즐이에요. */
 (function () {
@@ -58,9 +58,11 @@
     '#board .grid div{border:0!important}' +
     '#board .grid .c svg{display:none!important}' +
     '#board .grid .open.gold{box-shadow:none!important}' +
-    '.pz .cv path{fill:#e8edf7;stroke:#b9c6e0;stroke-width:1}' +
-    '.pz .op path{fill:none;stroke:rgba(30,45,90,.16);stroke-width:1}' +
-    '.pz.done .op path{fill:#000;stroke:none;filter:url(#pzO)}' +
+    '.pz .cv path{fill:#eef1f7;stroke:#d3dbea;stroke-width:.8}' +
+    '.pz .sh path{fill:#000;filter:url(#pzS)}' +
+    '.pz .op path{fill:#000;stroke:none;filter:url(#pzO)}' +
+    '.pz .ln path{fill:none;stroke:rgba(18,28,58,.62);stroke-width:3.4;stroke-linejoin:round}' +
+    '.pz .hl path{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.1;transform:translate(1.4px,1.4px)}' +
     '.pz .gd{fill:none;stroke:#ffd34d;stroke-width:3.2;filter:drop-shadow(0 0 3px rgba(255,200,40,.8))}' +
     '.pz .nw{fill:#e8edf7;stroke:#b9c6e0;stroke-width:1;transform-box:fill-box;transform-origin:50% 50%;animation:pzin 1.1s ease-in forwards}' +
     '@keyframes pzin{0%{opacity:1;transform:none}35%{opacity:1;transform:translateY(-6px) scale(1.08)}100%{opacity:0;transform:translateY(-14px) scale(1.18)}}';
@@ -84,7 +86,11 @@
   }
   var DEFS = '<defs><linearGradient id="pzG" x1="0" y1="0" x2="1" y2="1">' +
     '<stop offset="0" stop-color="#f6f8fd"/><stop offset="1" stop-color="#d9e2f2"/></linearGradient>' +
-    bevel('pzO', 3.5, false) + '</defs>';
+    bevel('pzO', 4.5, false) +
+    // 맞춘 조각이 덮개 위로 살짝 떠 보이게: 조각 바깥으로만 그림자
+    '<filter id="pzS" x="-10%" y="-10%" width="130%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>' +
+    '<feOffset dx="2" dy="4" result="o"/><feComposite in="o" in2="SourceAlpha" operator="out" result="s"/>' +
+    '<feFlood flood-color="#1e2d5a" flood-opacity=".45"/><feComposite in2="s" operator="in"/></filter></defs>';
 
   var last = '';
   function draw() {
@@ -110,7 +116,7 @@
     }
     var done = cv === '';
     var svg = '<svg class="pz' + (done ? ' done' : '') + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + DEFS +
-      '<g class="op">' + op + '</g><g class="cv">' + cv + '</g>' + nw + gd + '</svg>';
+      '<g class="cv">' + cv + '</g><g class="sh">' + op + '</g><g class="op">' + op + '</g><g class="hl">' + op + '</g><g class="ln">' + op + '</g>' + nw + gd + '</svg>';
     if (old) old.remove();
     grid.insertAdjacentHTML('beforebegin', svg);
   }
