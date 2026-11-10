@@ -60,7 +60,7 @@
         w.style.transformOrigin = ((ox - e[0]) / e[2] * 100) + '% ' + ((oy - e[1]) / e[3] * 100) + '%';
       }
       var p = './art/blink/g' + (n < 10 ? '0' : '') + n, fr = ['q', 'half', 'closed'].map(function (k) {
-        var x = new Image(); x.src = p + '-' + k + '.webp?v=3'; x.alt = ''; w.appendChild(x); return x;
+        var x = new Image(); x.src = p + '-' + k + '.webp?v=4'; x.alt = ''; w.appendChild(x); return x;
       });
       box.appendChild(w);
       blinkLoop(box, fr);
