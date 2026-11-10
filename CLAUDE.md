@@ -68,6 +68,6 @@
 ## 참고 문서·작업
 - 한 장 요약(Claude Docs): https://claude.ai/artifact/4xJ5se7tRcpsdCoymr3E9j
 - 복지관·지자체 공략 가이드: https://claude.ai/artifact/EZsGZx62bP4vopEtEv8L2z
-- 아침 리포트 예약 작업: 없음(2026-11-10 확인, 예전 trig_01Fk… 사라짐). 대신 DB에 매일 쌓임 ↓
+- 주간 브리핑 예약 작업: trig_016BvAzhLMYihQHtQ5XS1DqW (매주 금 17:50 KST, ops_daily 조회만). 예전 아침 리포트는 없어짐.
 - 지표 기록: `ops_daily(day, stats jsonb)` — cron `ttok-ops-daily` 매일 00:10 KST에 전날 `_ops_daily_stats_v2` + `app_openers` 저장(11/4부터). `seen_days(user_id, day)` — touch_seen 때 날마다 앱 연 사람 기록(11/10부터, 이전은 마지막 접속만).
 - 운영자 계정 user_id: cdc8fd6d-763c-4c5e-99ee-c86b2aa03163
