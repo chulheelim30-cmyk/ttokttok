@@ -1,42 +1,69 @@
-/* 톡톡 테마 v1 — Gemini 첫 화면 느낌 (이 파일 링크를 지우면 원래 디자인) */
-:root{--line:#edf0f6;--grad:linear-gradient(90deg,#3b7bf6 0%,#8a6cf0 55%,#e9719f 100%)}
-html,body{background:#eef2f9}
-#app{background:linear-gradient(180deg,#fff 0%,#fff 50%,#f1f5ff 72%,#ece9ff 88%,#fdeef4 100%)}
-#app::after{content:"";position:absolute;left:-20%;right:-20%;bottom:-120px;height:320px;pointer-events:none;z-index:0;
- background:radial-gradient(closest-side,rgba(120,160,255,.28),rgba(170,140,255,.14) 55%,transparent)}
+/* 톡톡 테마 v2.0 — 따뜻한 베이지 + 세이지 그린 (배치·기능은 그대로, 색만. 이 파일 링크를 지우면 원래 디자인) */
+:root{--navy:#3A3128;--blue:#5E7590;--sky:#5E7E9C;--bg:#F4ECDF;--line:#E8DCC8;--mut:#6E6152;--mut2:#8F8270;--ok:#4F6E52;--warn:#9A5A1F;--gold:#D9AE52;
+ --card:#FBF7EF;--sage:#9DB59A;--sage-d:#5F7D60;--coral:#F2C3BB;--coral-t:#7A2C23;--peach:#F3D9BD;--peach-t:#6A3812;--grad:none}
+html,body{background:#E9DFCF;color:#3A3128}
+#app{background:var(--bg)}
+#app::after{display:none}
 .view,.nav{z-index:1}
 /* 인사말 */
-.day-line{text-align:center;font-size:13px;font-weight:600;color:#8a93a6;letter-spacing:.2px;padding-top:14px}
-.hello{margin:6px 22px 4px;text-align:center;font-size:25px;line-height:1.35;font-weight:700;letter-spacing:-.4px;
- background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hello small{display:block;margin-top:4px;font-size:14px;font-weight:500;letter-spacing:0;color:#7b8498;-webkit-text-fill-color:#7b8498}
+.day-line{text-align:center;font-size:13px;font-weight:600;color:var(--mut);letter-spacing:.2px;padding-top:14px}
+.hello{margin:6px 22px 4px;text-align:center;font-size:25px;line-height:1.35;font-weight:700;letter-spacing:-.4px;color:#4D6A86}
+.hello small{display:block;margin-top:4px;font-size:14px;font-weight:500;letter-spacing:0;color:var(--mut);-webkit-text-fill-color:var(--mut)}
 .top .logo{font-size:17px;font-weight:700}
-.top .chip{background:#fff;border:1px solid #e3e8f2;color:#3a4458;box-shadow:0 1px 4px rgba(40,60,110,.06)}
-/* 그림 카드: 기울기·테이프 없이 반듯하게 */
-.polaroid{transform:none;margin:14px 18px 6px;padding:12px;border-radius:28px;border:1px solid var(--line);
- box-shadow:0 10px 30px rgba(60,90,160,.10)}
+.top .chip{background:var(--card);border:1px solid var(--line);color:var(--navy);box-shadow:0 1px 4px rgba(90,70,40,.06)}
+/* 그림 카드 */
+.polaroid{transform:none;margin:14px 18px 6px;padding:12px;border-radius:28px;border:1px solid var(--line);background:var(--card);
+ box-shadow:0 10px 30px rgba(110,90,60,.10)}
 .polaroid .tape{display:none}
 .polaroid .pic-btn,.board{border-radius:20px}
-.pic-chip{background:rgba(255,255,255,.88);color:#2a3550;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.board{background:#EFE6D8}
+.grid .c{background:#E8DCC8}
+.pic-chip{background:rgba(251,247,239,.9);color:var(--navy);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 /* 일반 카드 */
-.card{border-radius:24px;border:1px solid var(--line);box-shadow:0 4px 18px rgba(60,90,160,.07)}
+.card{background:var(--card);border-radius:24px;border:1px solid var(--line);box-shadow:0 4px 18px rgba(110,90,60,.07)}
+.mem,.set{border-bottom-color:#EDE3D3}
 /* 풍년이 말풍선 */
-.pung-say.knock-head{border:1px solid #e3e8f2!important;border-radius:22px!important;box-shadow:0 4px 14px rgba(60,90,160,.08)}
-.cap{color:#6b7488}
-/* 칩: 알약 */
-.chips .chip{background:#fff;border:1px solid #e3e8f2;color:#3a4458;font-weight:600;padding:7px 13px}
-.chips .chip.g{color:#1e7d4f}
-/* 아래 메뉴: 떠 있는 알약 */
-.view{bottom:calc(86px + var(--safe-b))}
-.nav{left:14px;right:14px;bottom:calc(12px + var(--safe-b));height:62px;padding-bottom:0;border:1px solid #e6eaf3;border-radius:31px;
- background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(60,90,160,.14)}
-.nav button{border-radius:24px;margin:0 4px;font-weight:600}
-.nav button.on{color:#3b5bdb;background:linear-gradient(135deg,rgba(59,123,246,.10),rgba(233,113,159,.10))}
-.about-link{color:#8a93a6;text-decoration:none}
-
-/* 풍년이 그림: 열릴 때 3초 움직임 */
-
-/* 그림첩: 잠긴 그림은 분위기만 보이게, 미리 보기 없음 */
+.pung-say.knock-head{background:var(--card)!important;border:1px solid var(--line)!important;border-radius:22px!important;box-shadow:0 4px 14px rgba(110,90,60,.08)}
+.cap{color:var(--mut)}
+/* 노크 버튼 */
+.knock{background:radial-gradient(circle at 35% 30%,#9DB2C6,#5E7590)}
+.ripple{border-color:var(--sage)}
+/* 칩 */
+.chip{background:#E6E2D6;color:#3F5770}
+.chip.g{background:#D3E0CF;color:#2F4A33}
+.chip.y{background:var(--peach);color:var(--peach-t)}
+.chips .chip{background:var(--card);border:1px solid var(--line);color:var(--navy);font-weight:600;padding:7px 13px}
+.chips .chip.g{color:#2F4A33}
+/* 버튼 */
+.bs{background:#E6E2D6;color:#3F5770}
+.bw{background:var(--card)}
+.plan{background:var(--card)}
+.plan.sel{background:#F6EFE3}
+.demo{border-color:#D9C7A6;background:#FBF7EF}
+.sw{background:#DDD3C3}
+.sw.on{background:var(--sage-d)}
+.grab{background:#D9CDB9}
+.sheet input.inp{background:var(--card)}
+/* 그림첩: 잠긴 그림은 세이지 톤 */
+.th,.lock{background:#B8C9B4}
+.lock{color:#3E513C}
 .th.blur img,.th.blur video{filter:blur(4px) saturate(.9)!important;transform:scale(1.08)!important}
 .pv img.pv-blur,.pv video.pv-blur{filter:blur(8px) saturate(.9)!important;transform:scale(1.1)!important}
 #picBuy{display:none!important}
+/* 첫 화면·벽 */
+.onb{background:linear-gradient(160deg,#3F5243 0%,#7F9C7C 100%)}
+.wall{background:linear-gradient(160deg,#5E7590 0%,#9DB59A 55%,#E9DCC4 100%)}
+.wg{background:rgba(251,247,239,.95)}
+/* 노크방 상태 (글자 안에 박힌 색을 부드러운 톤으로) */
+[style*="background:#fde8e6"]{background:var(--coral)!important;color:var(--coral-t)!important}
+[style*="background:#fff1d6"]{background:var(--blue)!important;color:#fff!important}
+[style*="color:#c0392b"]:not([style*="background"]){color:#A2493D!important}
+[style*="color:#1f5fa8"]:not([style*="background"]){color:#4D6A86!important}
+[style*="background:#14284b"]{background:#1F2B45!important}
+/* 아래 메뉴: 떠 있는 알약 */
+.view{bottom:calc(86px + var(--safe-b))}
+.nav{left:14px;right:14px;bottom:calc(12px + var(--safe-b));height:62px;padding-bottom:0;border:1px solid var(--line);border-radius:31px;
+ background:rgba(251,247,239,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(110,90,60,.14)}
+.nav button{border-radius:24px;margin:0 4px;font-weight:600;color:var(--mut)}
+.nav button.on{color:var(--navy);background:#EBDDC6}
+.about-link{color:var(--mut);text-decoration:none}

@@ -58,13 +58,13 @@
     '#board .grid div{border:0!important}' +
     '#board .grid .c svg{display:none!important}' +
     '#board .grid .open.gold{box-shadow:none!important}' +
-    '.pz .cv path{fill:#eef1f7;stroke:#d3dbea;stroke-width:.8}' +
+    '.pz .cv path{fill:#F1E8DA;stroke:#D8C9B1;stroke-width:.8}' +
     '.pz .sh path{fill:#000;filter:url(#pzS)}' +
     '.pz .op path{fill:#000;stroke:none;filter:url(#pzO)}' +
     '.pz .ln path{fill:none;stroke:rgba(18,28,58,.62);stroke-width:3.4;stroke-linejoin:round}' +
     '.pz .hl path{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.1;transform:translate(1.4px,1.4px)}' +
     '.pz .gd{fill:none;stroke:#ffd34d;stroke-width:3.2;filter:drop-shadow(0 0 3px rgba(255,200,40,.8))}' +
-    '.pz .nw{fill:#e8edf7;stroke:#b9c6e0;stroke-width:1;transform-box:fill-box;transform-origin:50% 50%;animation:pzin 1.1s ease-in forwards}' +
+    '.pz .nw{fill:#EBE0CF;stroke:#C7B697;stroke-width:1;transform-box:fill-box;transform-origin:50% 50%;animation:pzin 1.1s ease-in forwards}' +
     '@keyframes pzin{0%{opacity:1;transform:none}35%{opacity:1;transform:translateY(-6px) scale(1.08)}100%{opacity:0;transform:translateY(-14px) scale(1.18)}}';
   document.head.appendChild(css);
 
@@ -77,20 +77,20 @@
       '<feFlood flood-color="#fff" flood-opacity="' + (keep ? .85 : .55) + '"/><feComposite in2="lt" operator="in" result="hi"/>' +
       '<feOffset in="b" dx="-' + depth + '" dy="-' + depth + '" result="od"/>' +
       '<feComposite in="SourceAlpha" in2="od" operator="out" result="dk"/>' +
-      '<feFlood flood-color="#1e2d5a" flood-opacity="' + (keep ? .32 : .38) + '"/><feComposite in2="dk" operator="in" result="lo"/>' +
+      '<feFlood flood-color="#5A4632" flood-opacity="' + (keep ? .32 : .38) + '"/><feComposite in2="dk" operator="in" result="lo"/>' +
       (keep ? '<feGaussianBlur in="SourceAlpha" stdDeviation="2.2"/><feOffset dy="3" result="ds"/>' +
-        '<feFlood flood-color="#1e2d5a" flood-opacity=".28"/><feComposite in2="ds" operator="in" result="sd"/>' +
+        '<feFlood flood-color="#5A4632" flood-opacity=".28"/><feComposite in2="ds" operator="in" result="sd"/>' +
         '<feMerge><feMergeNode in="sd"/><feMergeNode in="SourceGraphic"/><feMergeNode in="lo"/><feMergeNode in="hi"/></feMerge>'
         : '<feMerge><feMergeNode in="lo"/><feMergeNode in="hi"/></feMerge>') +
       '</filter>';
   }
   var DEFS = '<defs><linearGradient id="pzG" x1="0" y1="0" x2="1" y2="1">' +
-    '<stop offset="0" stop-color="#f6f8fd"/><stop offset="1" stop-color="#d9e2f2"/></linearGradient>' +
+    '<stop offset="0" stop-color="#F7F1E7"/><stop offset="1" stop-color="#E0D2BC"/></linearGradient>' +
     bevel('pzO', 4.5, false) +
     // 맞춘 조각이 덮개 위로 살짝 떠 보이게: 조각 바깥으로만 그림자
     '<filter id="pzS" x="-10%" y="-10%" width="130%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>' +
     '<feOffset dx="2" dy="4" result="o"/><feComposite in="o" in2="SourceAlpha" operator="out" result="s"/>' +
-    '<feFlood flood-color="#1e2d5a" flood-opacity=".45"/><feComposite in2="s" operator="in"/></filter></defs>';
+    '<feFlood flood-color="#5A4632" flood-opacity=".45"/><feComposite in2="s" operator="in"/></filter></defs>';
 
   var last = '';
   function draw() {

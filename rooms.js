@@ -398,7 +398,7 @@
     if (!bar) {
       var box = document.getElementById('members'); if (!box) return rows.map(function (x) { return x.m; });
       bar = document.createElement('div'); bar.id = 'careBar';
-      bar.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;margin:0 0 8px;border-radius:12px;background:#f4f7fc;font-size:13.5px;line-height:1.5';
+      bar.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;margin:0 0 8px;border-radius:12px;background:#EFE6D8;font-size:13.5px;line-height:1.5';
       box.parentNode.insertBefore(bar, box);
     }
     bar.style.display = 'flex';
