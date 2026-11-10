@@ -862,7 +862,7 @@ window.__ttSeenLine = function (m, isMe) {
         window.__ttRpc('claim_login', { p_phone: ph, p_pin: p1 }).then(function (res) {
           res = res || {};
           if (!res.ok) { go.disabled = false; toast(res.msg || '찾지 못했어요'); return; }
-          if (res.same) { go.disabled = false; sh.classList.remove('on'); toast('이미 이 계정이에요'); return; }
+          if (res.same && !(res.room && res.room.id)) { go.disabled = false; sh.classList.remove('on'); toast('이미 이 계정이에요'); return; }
           afterClaim(res);
         }).catch(function (e) { go.disabled = false; toast(msg(e)); });
       } else {
