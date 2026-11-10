@@ -370,29 +370,33 @@
   };
 })();
 
-// 방장 관리 모드: 확인이 필요한 사람이 맨 위로 + "오늘 노크 n/N · 확인 필요 k명" 요약 + '확인 필요만 보기'
+// 확인이 필요한 사람이 맨 위로 (모든 구성원 화면). 방장에게만 "오늘 노크 n/N · 확인 필요 k명" 요약 + '확인 필요만 보기'
+// 순위: 나 → 기준 시간 넘김 → 컨디션 '별로' → 노크 전(기준 시간에 가까운 사람부터) → 노크함·멈춤. 같은 순위는 원래 순서 유지.
+// 화면을 보고 있는 동안 10분마다 다시 계산해서 순서가 저절로 바뀌어요.
 (function () {
   var onlyNeed = false;
   function hrs(t) { return t ? (Date.now() - new Date(t).getTime()) / 36e5 : Infinity; }
   window.__ttSortMembers = function (list, meKnocked, today) {
     var me = window.__ttMe ? window.__ttMe() : null, r = window.__ttRoom || {};
     var mood = window.__ttMood || {};
-    function info(m) {
+    function info(m, i) {
       var isMe = m.user_id === me || m.user_id === 'me';
       var knocked = isMe ? meKnocked : !!(today && today[m.user_id]);
-      var lapsed = !knocked && !m.paused && m.last_knock_at && hrs(m.last_knock_at) >= (m.threshold_hours || 48);
+      var ratio = (!knocked && !m.paused && m.last_knock_at) ? hrs(m.last_knock_at) / (m.threshold_hours || 48) : 0;
+      var lapsed = ratio >= 1;
       var rank = isMe ? 0 : lapsed ? 1 : (knocked && mood[m.user_id] === 3) ? 2 : !knocked && !m.paused ? 3 : 4;
-      return { m: m, rank: rank, knocked: knocked, isMe: isMe };
+      return { m: m, rank: rank, ratio: ratio, i: i, knocked: knocked, isMe: isMe };
     }
     var rows = list.map(info);
+    rows.sort(function (a, b) { return a.rank - b.rank || ((a.rank === 1 || a.rank === 3) ? b.ratio - a.ratio : 0) || a.i - b.i; });
     var owner = !!(me && r.created_by === me);
     var bar = document.getElementById('careBar');
-    if (!owner || list.length < 3) { if (bar) bar.style.display = 'none'; onlyNeed = false; return list; }
+    if (!owner || list.length < 3) { if (bar) bar.style.display = 'none'; onlyNeed = false; return rows.map(function (x) { return x.m; }); }
     var done = rows.filter(function (x) { return x.knocked; }).length;
     var need = rows.filter(function (x) { return !x.isMe && x.rank <= 2; }).length;
     var wait = rows.filter(function (x) { return !x.isMe && x.rank === 3; }).length;
     if (!bar) {
-      var box = document.getElementById('members'); if (!box) return list;
+      var box = document.getElementById('members'); if (!box) return rows.map(function (x) { return x.m; });
       bar = document.createElement('div'); bar.id = 'careBar';
       bar.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;margin:0 0 8px;border-radius:12px;background:#f4f7fc;font-size:13.5px;line-height:1.5';
       box.parentNode.insertBefore(bar, box);
@@ -403,10 +407,10 @@
       (wait ? '<br><span style="color:#5a6577">아직 노크 전 ' + wait + '명</span>' : '') + '</div>' +
       '<button type="button" id="careOnly" style="border:1.5px solid #14284b;background:' + (onlyNeed ? '#14284b' : '#fff') + ';color:' + (onlyNeed ? '#fff' : '#14284b') + ';border-radius:999px;padding:6px 10px;font:inherit;font-size:12.5px;font-weight:700">' + (onlyNeed ? '전체 보기' : '확인 필요만') + '</button>';
     document.getElementById('careOnly').onclick = function () { onlyNeed = !onlyNeed; if (window.__ttRerender) window.__ttRerender(); };
-    rows.sort(function (a, b) { return a.rank - b.rank; });
     if (onlyNeed) rows = rows.filter(function (x) { return x.isMe || x.rank <= 3; });
     return rows.map(function (x) { return x.m; });
   };
+  setInterval(function () { if (!document.hidden && window.__ttRoom && window.__ttRerender) try { window.__ttRerender(); } catch (e) {} }, 6e5);
 })();
 
 // 업데이트 소식: 새 버전이면 한 번 보여 주고, 설정에서 언제든 다시 볼 수 있어요
