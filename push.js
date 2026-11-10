@@ -87,22 +87,34 @@
     btn.onclick = function () { on ? disable() : enable(); };
   }
 
-  // 노크한 뒤 한 번 가볍게 여쭤봐요 (하루 한 번, 최대 3번)
+  // 앱을 열 때마다 알림이 꺼져 있으면 크게 안내해요 ('나중에'는 6시간 쉬기)
   function maybeAsk() {
-    if (why() || Notification.permission !== 'default') return;
-    var n = +(LS('tt-push-ask') || 0), day = new Date().toDateString();
-    if (n >= 5 || LS('tt-push-ask-day') === day || document.getElementById('pushAsk')) return;
-    LS('tt-push-ask', String(n + 1)); LS('tt-push-ask-day', day);
+    if (why() || document.getElementById('pushAsk')) return;
+    var p = Notification.permission;
+    if (p === 'granted') return;
+    if (Date.now() - +(LS('tt-push-ask-at') || 0) < (p === 'denied' ? 24 : 6) * 3600e3) return;
+    if (!(window.__ttMe && window.__ttMe())) return;
+    if (document.querySelector('.sheet.on')) { clearTimeout(maybeAsk.h); maybeAsk.h = setTimeout(maybeAsk, 3000); return; }
     var d = document.createElement('div');
     d.id = 'pushAsk';
-    d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:91;background:#fff;color:#23324a;border:2px solid #23324a;border-radius:16px;padding:14px 16px;box-shadow:0 6px 18px rgba(35,50,74,.18);font-size:13.5px;line-height:1.55;font-family:inherit';
-    d.innerHTML = '<div style="font-weight:800;font-size:15px;margin-bottom:2px">노크가 멈추면 알려 드릴까요?</div>' +
-      '가까운 사람이 기준 시간 넘게 노크를 안 하면 이 휴대폰으로 알려 드려요.' +
-      '<div style="display:flex;gap:8px;margin-top:10px"><button id="pushAskNo" style="flex:1;border:1.5px solid #c9cfd8;background:#fff;border-radius:12px;padding:10px;font:inherit;color:#5a6577">나중에</button>' +
-      '<button id="pushAskYes" style="flex:2;border:0;background:#14284b;color:#fff;border-radius:12px;padding:10px;font:inherit;font-weight:800">알림 켜기</button></div>';
+    d.style.cssText = 'position:fixed;inset:0;z-index:95;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;padding:20px;font-family:inherit';
+    var body = p === 'denied'
+      ? '<div style="font-size:14px;line-height:1.6;color:#3a465a;text-align:left;background:#f4f6fa;border-radius:12px;padding:12px 14px;margin-top:12px">' +
+        '휴대폰에서 알림이 막혀 있어요. 이렇게 풀어 주세요.<br><b>1.</b> 휴대폰 <b>설정</b> → <b>애플리케이션</b><br><b>2.</b> <b>크롬</b>(또는 <b>톡톡</b>) → <b>알림</b><br><b>3.</b> <b>알림 허용</b> 켜기</div>'
+      : '';
+    d.innerHTML = '<div style="background:#fff;color:#23324a;border-radius:22px;padding:24px 20px 18px;max-width:360px;width:100%;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.25)">' +
+      '<div style="font-size:46px;line-height:1">🔔</div>' +
+      '<div style="font-weight:900;font-size:20px;margin:10px 0 6px">알림을 꼭 켜 주세요</div>' +
+      '<div style="font-size:14.5px;line-height:1.6;color:#4a5568">알림이 꺼져 있으면 <b style="color:#c0392b">가까운 사람 소식이 끊겨도 알 수 없어요.</b><br>새 소식·콕 찌르기·업데이트도 알림으로 와요.</div>' + body +
+      '<button id="pushAskYes" style="display:block;width:100%;margin-top:16px;border:0;background:#14284b;color:#fff;border-radius:14px;padding:15px;font:inherit;font-size:16.5px;font-weight:900">' + (p === 'denied' ? '설정했어요 · 다시 확인' : '알림 켜기') + '</button>' +
+      '<button id="pushAskNo" style="display:block;width:100%;margin-top:6px;border:0;background:none;padding:10px;font:inherit;font-size:13.5px;color:#8a94a6">나중에</button></div>';
     document.body.appendChild(d);
-    document.getElementById('pushAskNo').onclick = function () { d.remove(); };
-    document.getElementById('pushAskYes').onclick = function () { d.remove(); enable(); };
+    document.getElementById('pushAskNo').onclick = function () { LS('tt-push-ask-at', String(Date.now())); d.remove(); };
+    document.getElementById('pushAskYes').onclick = async function () {
+      d.remove();
+      if (Notification.permission === 'denied') { toast('아직 막혀 있어요 · 설정에서 알림을 허용한 뒤 앱을 다시 열어 주세요'); LS('tt-push-ask-at', String(Date.now() - 23 * 3600e3)); return; }
+      var ok = await enable(); if (!ok) LS('tt-push-ask-at', String(Date.now()));
+    };
   }
 
   window.ttPushEnable = enable;
@@ -115,8 +127,8 @@
     setTimeout(async function () {
       try {
         if (why()) return;
-        if (Notification.permission === 'default') { maybeAsk(); return; }
-        if (Notification.permission !== 'granted') return;
+        if (Notification.permission !== 'granted') { maybeAsk(); return; }
+
         // 허락은 돼 있는데 등록이 없거나(앱 재설치·만료), 계정이 바뀌었으면 조용히 다시 등록해요
         var me = window.__ttMe && window.__ttMe(), s = await currentSub();
         if (!s) { var reg = await navigator.serviceWorker.ready; s = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(KEY) }); }
@@ -135,5 +147,5 @@
       }).observe(pung, { attributes: true, attributeFilter: ['class'] });
     }
   });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { render(); setTimeout(maybeAsk, 2500); } });
 })();
