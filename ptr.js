@@ -19,7 +19,8 @@
   try {
     var back = sessionStorage.getItem('tt-ptr-tab'); sessionStorage.removeItem('tt-ptr-tab');
     if (back && OK[back]) window.addEventListener('load', function () {
-      var n = 0, t = setInterval(function () { if (typeof window.go === 'function' && document.getElementById('v-' + back)) { clearInterval(t); try { window.go(back); } catch (e) {} } else if (++n > 40) clearInterval(t); }, 100);
+      // 화면은 index.html에서 미리 바꿔 둬요(첫 화면 깜빡임 없음), 여기선 내용만 다시 그려요
+      var n = 0, t = setInterval(function () { if (typeof window.go === 'function' && document.getElementById('v-' + back)) { clearInterval(t); try { window.go(back); } catch (e) {} } else if (++n > 40) clearInterval(t); }, 30);
     });
   } catch (e) {}
   function atTop(t) {
