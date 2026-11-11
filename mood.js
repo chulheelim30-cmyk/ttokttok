@@ -121,7 +121,7 @@
     if (patDay !== today()) { patDay = today(); patSent = {}; setTimeout(loadPatSent, 0); }
     if (!low((window.__ttMood || {})[uid])) return '';
     var st = 'margin-left:6px;border:0;border-radius:12px;padding:4px 9px;font:inherit;font-size:12px;font-weight:700;';
-    return patSent[uid] ? '<span class="mini" style="' + st + 'background:#f3eee6;color:#8a7f70">토닥토닥</span>'
+    return patSent[uid] ? '<span class="mini" style="' + st + 'background:#f3eee6;color:#8a7f70">토닥토닥 <svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:-2px" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.5h2c.7-1.3 2.2-2.5 4.3-2.5 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="#e8577a"/></svg></span>'
       : '<button class="mini" style="' + st + 'background:#fbe9ec;color:#b0475e" onclick="__ttPat(\'' + uid + '\')">토닥토닥 <svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:-2px" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.5h2c.7-1.3 2.2-2.5 4.3-2.5 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="#e8577a"/></svg></button>';
   };
   window.__ttPat = async function (uid) {
