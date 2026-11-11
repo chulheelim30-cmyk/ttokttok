@@ -17,7 +17,7 @@
 - `index.html`: 화면 전부 + 인라인 스타일. 현재 번들·CSS 파일명을 참조.
 - `app-<hash>.js`: 빌드된 앱(원본 소스 없음, 직접 패치). `app-21865120.css`.
 - 보조 스크립트(번들 밖, 읽기 쉬움): `push.js`(웹푸시 켜기/테스트), `mood.js`(오늘 컨디션·앱 연 시각), `rooms.js`(방 종류·인원, 그림 미리보기, 방장 전용 실명, 확인 필요한 사람 위로 정렬: 모든 구성원·10분마다 다시 계산), `account.js`(탈퇴), `ptr.js`(노크·노크방·그림첩에서 아래로 당겨 새로고침, 보던 탭 유지(sessionStorage tt-ptr-tab, index.html의 </nav> 뒤 인라인 스크립트가 첫 화면 전에 탭을 바꿔 둠), 설정 제외, 안쪽 스크롤이 맨 위일 때만, 기본 당김은 overscroll contain으로 끔), `kakao.js`(카톡 등 앱 안 브라우저 → 크롬/사파리로 열기, 번들보다 먼저 실행), `back.js`(뒤로가기), `pwa.js`, `anim.js`(풍년이 깜빡임·그림 완성 축하), `easy.js`(어르신용 쉬운 모드: 큰 노크 버튼+가족 무사 여부, 설정에서 켜기 또는 ?easy=1, localStorage tt-easy), `puzzle.js`(그림판 30칸을 직소 퍼즐 조각 모양으로: #board .grid 앞에 SVG를 끼움, 조각 모양은 그림마다 고정, 방금 연 조각은 덮개가 들려 사라지는 연출, 맞춘 조각만 강조(굵은 테두리·빛·그늘 입체·덮개 위 그림자, 11/10), 안 연 조각은 연한 평면 덮개, 물방울 아이콘 숨김. 화면 문구는 '칸' 대신 '조각'), `theme.css`.
-- 현재 버전(바뀌면 여기 고치기): rooms.js?v=32 · mood.js?v=10 · ptr.js?v=4 · anim.js?v=10 · theme.css?v=8 · push v4 · account v1 · kakao.js?v=1 · easy.js?v=1 · puzzle.js?v=5.
+- 현재 버전(바뀌면 여기 고치기): rooms.js?v=33 · mood.js?v=10 · ptr.js?v=4 · anim.js?v=10 · theme.css?v=8 · push v4 · account v1 · kakao.js?v=1 · easy.js?v=1 · puzzle.js?v=5.
 - `sw.js`: 서비스워커. SHELL 목록 + 캐시 이름 `ttokttok-YYYYMMDDHHMM`(patch.py가 자동 갱신) + push/notificationclick.
 - `privacy.html`: 개인정보처리방침(항목 추가 시 같이 고치기).
 - `art/`: 공개 그림만. **개인 사진은 저장소에 절대 넣지 않기** (Supabase 비공개 버킷 `beta-art`).

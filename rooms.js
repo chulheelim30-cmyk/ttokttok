@@ -406,8 +406,12 @@
       (need ? ' · <b style="color:#c0392b">확인 필요 ' + need + '명</b>' : ' · 확인 필요 없음') +
       (wait ? '<br><span style="color:#5a6577">아직 노크 전 ' + wait + '명</span>' : '') + '</div>' +
       '<button type="button" id="careOnly" style="border:1.5px solid #14284b;background:' + (onlyNeed ? '#14284b' : '#fff') + ';color:' + (onlyNeed ? '#fff' : '#14284b') + ';border-radius:999px;padding:6px 10px;font:inherit;font-size:12.5px;font-weight:700">' + (onlyNeed ? '전체 보기' : '확인 필요만') + '</button>';
-    document.getElementById('careOnly').onclick = function () { onlyNeed = !onlyNeed; if (window.__ttRerender) window.__ttRerender(); };
-    if (onlyNeed) rows = rows.filter(function (x) { return x.isMe || x.rank <= 3; });
+    document.getElementById('careOnly').onclick = function () { onlyNeed = !onlyNeed; if (window.__ttRerender) window.__ttRerender(); var b = document.getElementById('careBar'); if (b && b.scrollIntoView) b.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+    // '확인 필요만' = 위 숫자(확인 필요 n명)와 같은 사람만 (기준 시간 넘김·컨디션 안 좋음). 노크 전인 사람은 빼요.
+    if (onlyNeed) {
+      rows = rows.filter(function (x) { return x.isMe || x.rank <= 2; });
+      if (!need) bar.firstChild.insertAdjacentHTML('beforeend', '<br><span style="color:#1f7a3a;font-weight:700">지금은 확인이 필요한 사람이 없어요</span>');
+    }
     return rows.map(function (x) { return x.m; });
   };
   setInterval(function () { if (!document.hidden && window.__ttRoom && window.__ttRerender) try { window.__ttRerender(); } catch (e) {} }, 6e5);
