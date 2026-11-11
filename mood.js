@@ -121,7 +121,7 @@
     if (patDay !== today()) { patDay = today(); patSent = {}; setTimeout(loadPatSent, 0); }
     if (!low((window.__ttMood || {})[uid])) return '';
     var st = 'margin-left:6px;border:0;border-radius:12px;padding:4px 9px;font:inherit;font-size:12px;font-weight:700;';
-    return patSent[uid] ? '<span class="mini" style="' + st + 'background:#f3eee6;color:#8a7f70">토닥토닥 했어요 🤍</span>'
+    return patSent[uid] ? '<span class="mini" style="' + st + 'background:#f3eee6;color:#8a7f70">토닥토닥</span>'
       : '<button class="mini" style="' + st + 'background:#fbe9ec;color:#b0475e" onclick="__ttPat(\'' + uid + '\')">토닥토닥 🤍</button>';
   };
   window.__ttPat = async function (uid) {
