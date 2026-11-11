@@ -17,7 +17,7 @@
 - `index.html`: 화면 전부 + 인라인 스타일. 현재 번들·CSS 파일명을 참조.
 - `app-<hash>.js`: 빌드된 앱(원본 소스 없음, 직접 패치). `app-21865120.css`.
 - 보조 스크립트(번들 밖, 읽기 쉬움): `push.js`(웹푸시 켜기/테스트), `mood.js`(오늘 컨디션·앱 연 시각), `rooms.js`(방 종류·인원, 그림 미리보기, 방장 전용 실명, 확인 필요한 사람 위로 정렬: 모든 구성원·10분마다 다시 계산), `account.js`(탈퇴), `kakao.js`(카톡 등 앱 안 브라우저 → 크롬/사파리로 열기, 번들보다 먼저 실행), `back.js`(뒤로가기), `pwa.js`, `anim.js`(풍년이 깜빡임·그림 완성 축하), `easy.js`(어르신용 쉬운 모드: 큰 노크 버튼+가족 무사 여부, 설정에서 켜기 또는 ?easy=1, localStorage tt-easy), `puzzle.js`(그림판 30칸을 직소 퍼즐 조각 모양으로: #board .grid 앞에 SVG를 끼움, 조각 모양은 그림마다 고정, 방금 연 조각은 덮개가 들려 사라지는 연출, 맞춘 조각만 강조(굵은 테두리·빛·그늘 입체·덮개 위 그림자, 11/10), 안 연 조각은 연한 평면 덮개, 물방울 아이콘 숨김. 화면 문구는 '칸' 대신 '조각'), `theme.css`.
-- 현재 버전(바뀌면 여기 고치기): rooms.js?v=31 · mood.js?v=6 · anim.js?v=10 · theme.css?v=8 · push v4 · account v1 · kakao.js?v=1 · easy.js?v=1 · puzzle.js?v=5.
+- 현재 버전(바뀌면 여기 고치기): rooms.js?v=32 · mood.js?v=7 · anim.js?v=10 · theme.css?v=8 · push v4 · account v1 · kakao.js?v=1 · easy.js?v=1 · puzzle.js?v=5.
 - `sw.js`: 서비스워커. SHELL 목록 + 캐시 이름 `ttokttok-YYYYMMDDHHMM`(patch.py가 자동 갱신) + push/notificationclick.
 - `privacy.html`: 개인정보처리방침(항목 추가 시 같이 고치기).
 - `art/`: 공개 그림만. **개인 사진은 저장소에 절대 넣지 않기** (Supabase 비공개 버킷 `beta-art`).
@@ -31,14 +31,14 @@
 
 ## 서버 (Supabase 프로젝트 pbmocpzclvndlevuvfto)
 - 익명 로그인(localStorage `ttokttok-auth-v1`), 공개키 `sb_publishable_H42uVMl_0JG6NwuWhczkXw_85g9oaPi`.
-- 테이블: rooms(room_type family|crew|group, max_members 2~30), members(threshold_hours, paused, last_knock_at, last_seen_at), knocks(day, mood 1~3, mood_at), extra_knocks, nudges(pushed_at), golden_wins, profiles(plus), invites, room_bans, push_subs, push_log, _push_config(VAPID·cron 비밀), member_real_names(방장 전용, 별도 보관), operators, room_admins(방장 포함 최대 3명, 방장과 같은 권한), 계정 이어하기 코드(transfer_code, 기기 바꿀 때), account_logins(전화번호+비밀번호 6자리로 계정 찾기: set_login/my_login/claim_login, 5번 틀리면 15분 잠금. 로그아웃은 rooms.js, 번호 등록한 사람만 보임. member_real_names FK는 deferrable(계정 옮길 때 members 먼저 바뀌어서, 11/10 고침). claim_transfer_code는 같은 방에 있던 새 계정의 push_log·room_bans·operators 중복도 먼저 정리(11/10)).
+- 테이블: rooms(room_type family|crew|group, max_members 2~30), members(threshold_hours, paused, last_knock_at, last_seen_at), knocks(day, mood 1~5: 1 좋음·2 그냥·3 별로·4 아주 좋음·5 힘들어요, 3·5=안 좋음, mood_at), pats(토닥토닥, from·to·day 고유), extra_knocks, nudges(pushed_at), golden_wins, profiles(plus), invites, room_bans, push_subs, push_log, _push_config(VAPID·cron 비밀), member_real_names(방장 전용, 별도 보관), operators, room_admins(방장 포함 최대 3명, 방장과 같은 권한), 계정 이어하기 코드(transfer_code, 기기 바꿀 때), account_logins(전화번호+비밀번호 6자리로 계정 찾기: set_login/my_login/claim_login, 5번 틀리면 15분 잠금. 로그아웃은 rooms.js, 번호 등록한 사람만 보임. member_real_names FK는 deferrable(계정 옮길 때 members 먼저 바뀌어서, 11/10 고침). claim_transfer_code는 같은 방에 있던 새 계정의 push_log·room_bans·operators 중복도 먼저 정리(11/10)).
 - 그 밖: 운영자에게만 'Claude 점검 보고' 표시, 업데이트 소식(베타4.1), 그림 완성 시 축하 연출.
-- 주요 RPC: do_knock, knock_all, create_room_v2, join_room, accept_invite, update_room_settings, set_mood, touch_seen, save/remove_push_sub, set_real_name, my_real_name, room_real_names, room_golden, am_operator, _push_claim(서버 전용), _ops_daily_stats_v2(아침 리포트), _lonely_rooms.
+- 주요 RPC: do_knock, knock_all, create_room_v2, join_room, accept_invite, update_room_settings, set_mood, send_pat, my_pats, my_pats_sent, touch_seen, save/remove_push_sub, set_real_name, my_real_name, room_real_names, room_golden, am_operator, _push_claim(서버 전용), _ops_daily_stats_v2(아침 리포트), _lonely_rooms.
 - 그림 진행: `rooms.pic_count`(노크 들어올 때만 +1, 줄지 않음) → RPC `room_pic_count`. knocks 줄 수로 세지 말 것(나가기·내보내기에서 지워짐).
 - 트리거: members_before_insert(인원 한도·크루 72시간), _golden_after_knock(황금 칸 그림당 1칸).
 - 엣지 함수: `push`(cron 1분마다 tick: 알림 발송 + 10분마다 혼자 24시간 방 정리, test, key), `account`(탈퇴). 둘 다 verify_jwt=false, 자체 인증.
 - cron: `ttok-push-tick` (pg_cron + pg_net, 매분).
-- 알림 규칙(_push_claim): 기준시간 지나면 본인 '괜찮아요?' → 3시간 뒤 노크방 / 앱 열면 무사 / 밤 22~8시엔 콕만 / 컨디션 '별로' / 황금 칸 / 일요일 19시 주간 컨디션 / 저녁 8시 리마인드.
+- 알림 규칙(_push_claim): 기준시간 지나면 본인 '괜찮아요?' → 3시간 뒤 노크방 / 앱 열면 무사 / 밤 22~8시엔 콕만 / 컨디션 안 좋음(3·5) / 토닥토닥 / 황금 칸 / 일요일 19시 주간 컨디션 / 저녁 8시 리마인드.
 
 ### 서버 수정 요령 (중요)
 - MCP `execute_sql`은 **delete·drop이 들어간 문장을 사용자 확인으로 보내는데, 모바일에서는 자동 취소됨.** 지우기가 필요하면 엣지 함수(supabase-js `.delete()`)나 FK `on delete cascade`, 트리거 대신 DO 블록 조건(`if not exists ... create trigger`)으로 우회.
@@ -56,14 +56,14 @@
 - 초간단 앱 유지. 공익성 중요. 개인 사진 비공개. 운영자 기능은 운영자만.
 - 양방향(부모만 확인받는 구조 아님), 대상은 '가까운 사람'(가족·친구·크루). 하트 주고받기는 하지 않음.
 - 11/11 방향 추가: 동네방(행정동 단위, GPS 없이 동 직접 선택, 끊김 알림은 방장=통장·복지관 담당자에게만, 이웃엔 집계만). 퍼즐 30조각 고정(초대 동기). 기획: 프로젝트 문서 claude/똑똑_동네방_기획_v1.md. 아직 구현 안 함.
-- 컨디션: 노크 후 큰 버튼, 목록엔 글자로만(얼굴·7일 점 없음), 주간 알림으로 위로·안부.
+- 컨디션: 5가지(아주 좋음·좋음·그냥·별로·힘들어요, 11/11), 노크 후 큰 버튼, 목록엔 글자로만(얼굴·7일 점 없음), 주간 알림으로 위로·안부.
 - 아이콘: 11/11 퍼즐+하트+손 시안(7번)을 베이지·세이지로 고르기로 함(웹앱 아이콘·favicon 교체 완료 11/11, v=9: 같은 디자인을 벡터 icon.svg로 다시 그려 고해상도 PNG 생성, 수정은 icon.svg에서. 풍년이 그림 g01~12·blink는 AI 업스케일(Real-ESRGAN anime) 2배, 11/11. 안드로이드 TWA 아이콘은 아직). 화면 색은 theme.css v2(베이지·세이지, 배치·기능 그대로).
 - 플러스 월 2,900원 · 1년 29,000원(11/10 변경), 단체 1인 월 1,500원(베타 무료, 결제는 '준비 중'). 결제자만: 그림 미리보기·하루 3번·방 5개·소리·배지. 노크방 모두(곧): 문자 알림·형제 분담·주간 리포트·1년권 선물. 기본 안부 알림은 언제나 무료.
 - 그림 단품 판매 없음. 황금 칸 그림당 1칸, 당첨은 모두에게 공개.
 - 실명: 입장할 때 별명과 함께 선택 입력, 방장에게만 보임.
 - 혼자인 방은 24시간 뒤 자동 삭제.
 - 쉬운 모드(60~70대): 같은 앱 안, 자녀가 대신 설정. 큰 노크 버튼 + 가족 무사 여부만.
-- 보류: '별로'인 사람에게 '토닥토닥 🤍'(두드리기 변형, 세지 않음, 하루 1번) — 사용자가 나중에 결정.
+- 토닥토닥 🤍(11/11 구현): 오늘 컨디션 별로·힘들어요인 사람 옆 버튼, 한 사람에게 하루 1번, 세지 않음. 받은 사람은 앱 열면 카드 + 푸시(밤엔 아침에). mood.js `__ttPatBtn`(번들 Pi 칩 뒤).
 - 사업자 등록·결제는 예비창업패키지(2027.3 예상) 선정 후. 토스는 그 뒤. 지금은 웹앱 + 지인 베타 + 플레이스토어 비공개 테스트(나중).
 
 ## 참고 문서·작업

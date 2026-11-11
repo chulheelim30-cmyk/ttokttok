@@ -384,7 +384,7 @@
       var knocked = isMe ? meKnocked : !!(today && today[m.user_id]);
       var ratio = (!knocked && !m.paused && m.last_knock_at) ? hrs(m.last_knock_at) / (m.threshold_hours || 48) : 0;
       var lapsed = ratio >= 1;
-      var rank = isMe ? 0 : lapsed ? 1 : (knocked && mood[m.user_id] === 3) ? 2 : !knocked && !m.paused ? 3 : 4;
+      var rank = isMe ? 0 : lapsed ? 1 : (knocked && (mood[m.user_id] === 3 || mood[m.user_id] === 5)) ? 2 : !knocked && !m.paused ? 3 : 4;
       return { m: m, rank: rank, ratio: ratio, i: i, knocked: knocked, isMe: isMe };
     }
     var rows = list.map(info);
