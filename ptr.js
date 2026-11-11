@@ -1,4 +1,5 @@
-// 톡톡 아래로 당겨서 새로고침 (모든 화면)
+// 톡톡 아래로 당겨서 새로고침 (노크·노크방·그림첩 화면만, 설정은 빼요)
+// - 새로고침한 뒤에도 보던 화면(탭)으로 돌아가요.
 // - 맨 위에서 아래로 당기면 동그라미가 내려오고, 충분히 당겼다 놓으면 새로고침해요.
 // - 안쪽 목록·창이 스크롤된 상태면 그 목록 먼저 올라가게 두고, 맨 위일 때만 동작해요.
 (function () {
@@ -12,7 +13,17 @@
     ic = el.firstChild; document.body.appendChild(el);
     var s = document.createElement('style'); s.textContent = '@keyframes ttSpin{to{transform:rotate(360deg)}}'; document.head.appendChild(s);
   }
+  var OK = { knock: 1, room: 1, album: 1 };
+  function tab() { var b = document.querySelector('.nav button.on'); return b ? b.getAttribute('data-v') : ''; }
+  // 새로고침 뒤 보던 탭으로 돌아가기
+  try {
+    var back = sessionStorage.getItem('tt-ptr-tab'); sessionStorage.removeItem('tt-ptr-tab');
+    if (back && OK[back]) window.addEventListener('load', function () {
+      var n = 0, t = setInterval(function () { if (typeof window.go === 'function' && document.getElementById('v-' + back)) { clearInterval(t); try { window.go(back); } catch (e) {} } else if (++n > 40) clearInterval(t); }, 100);
+    });
+  } catch (e) {}
   function atTop(t) {
+    if (!OK[tab()]) return false;
     if ((window.scrollY || document.documentElement.scrollTop) > 0) return false;
     for (var n = t; n && n !== document.body && n.nodeType === 1; n = n.parentNode) {
       if (n.scrollTop > 0) return false;
@@ -44,6 +55,7 @@
       busy = true; ui();
       el.style.transition = 'transform .2s'; el.style.transform = 'translateY(24px)';
       ic.style.animation = 'ttSpin .7s linear infinite';
+      try { sessionStorage.setItem('tt-ptr-tab', tab()); } catch (e) {}
       setTimeout(function () { location.reload(); }, 250);
     } else hide();
     dy = 0;
