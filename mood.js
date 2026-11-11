@@ -122,7 +122,7 @@
     if (!low((window.__ttMood || {})[uid])) return '';
     var st = 'margin-left:6px;border:0;border-radius:12px;padding:4px 9px;font:inherit;font-size:12px;font-weight:700;';
     return patSent[uid] ? '<span class="mini" style="' + st + 'background:#f3eee6;color:#8a7f70">토닥토닥</span>'
-      : '<button class="mini" style="' + st + 'background:#fbe9ec;color:#b0475e" onclick="__ttPat(\'' + uid + '\')">토닥토닥 🤍</button>';
+      : '<button class="mini" style="' + st + 'background:#fbe9ec;color:#b0475e" onclick="__ttPat(\'' + uid + '\')">토닥토닥 <svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:-2px" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.5h2c.7-1.3 2.2-2.5 4.3-2.5 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="#e8577a"/></svg></button>';
   };
   window.__ttPat = async function (uid) {
     var r = window.__ttRoom; if (!r || !window.__ttRpc || patSent[uid]) return;
@@ -130,7 +130,7 @@
       await window.__ttRpc('send_pat', { p_room: r.id, p_to: uid });
       patSent[uid] = 1; if (navigator.vibrate) navigator.vibrate([20, 60, 20]);
       if (window.__ttRerender) window.__ttRerender();
-      toast('토닥토닥 🤍 마음을 전했어요');
+      toast('토닥토닥 💗 마음을 전했어요');
     } catch (e) { toast((e && e.message || '보내지 못했어요').replace(/^[A-Z_]+:\s*/, '')); }
   };
   // 받은 토닥토닥 보여 주기
@@ -144,7 +144,7 @@
       var o = document.createElement('div');
       o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(35,50,74,.35);display:flex;align-items:center;justify-content:center;padding:24px';
       o.innerHTML = '<div style="background:#fffaf3;border-radius:22px;padding:26px 22px 18px;max-width:320px;width:100%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.18)">' +
-        '<div style="font-size:46px;line-height:1;animation:ttPat 1.2s ease-in-out 2">🤍</div>' +
+        '<div style="font-size:46px;line-height:1;animation:ttPat 1.2s ease-in-out 2"><svg viewBox="0 0 24 24" width="52" height="52" style="vertical-align:middle" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.5h2c.7-1.3 2.2-2.5 4.3-2.5 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="#e8577a"/></svg></div>' +
         '<div style="font-size:19px;font-weight:800;color:#23324a;margin:12px 0 6px">토닥토닥</div>' +
         '<div style="font-size:14.5px;color:#4a5568;line-height:1.55">' + who.replace(/</g, '&lt;') + '이<br>토닥토닥 해 줬어요.<br>오늘은 조금 쉬어 가요.</div>' +
         '<button style="margin-top:16px;border:0;border-radius:14px;background:#7a9a7e;color:#fff;font:inherit;font-size:15px;font-weight:700;padding:11px 0;width:100%">고마워요</button></div>' +
