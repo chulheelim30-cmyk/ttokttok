@@ -38,7 +38,7 @@
 - 트리거: members_before_insert(인원 한도·크루 72시간), _golden_after_knock(황금 칸 그림당 1칸).
 - 엣지 함수: `push`(cron 1분마다 tick: 알림 발송 + 10분마다 혼자 24시간 방 정리, test, key), `account`(탈퇴). 둘 다 verify_jwt=false, 자체 인증.
 - cron: `ttok-push-tick` (pg_cron + pg_net, 매분).
-- 알림 규칙(_push_claim): 기준시간 지나면 본인 '괜찮아요?' → 3시간 뒤 노크방 / 앱 열면 무사 / 밤 22~8시엔 콕만 / 컨디션 안 좋음(3·5) / 토닥토닥 / 황금 칸 / 일요일 19시 주간 컨디션 / 저녁 8시 리마인드.
+- 알림 규칙(_push_claim): 기준시간 지나면 본인 '괜찮아요?' → 3시간 뒤 노크방 / 앱 열면 무사 / 밤 22~8시엔 콕만 / 컨디션 안 좋음(3·5) / 토닥토닥 / 마지막 한 조각(pic_count%30=29, 방 모두·데모방 포함, push_log kind=last1 그림마다 1번) / 황금 칸 / 일요일 19시 주간 컨디션 / 저녁 8시 리마인드.
 
 ### 서버 수정 요령 (중요)
 - MCP `execute_sql`은 **delete·drop이 들어간 문장을 사용자 확인으로 보내는데, 모바일에서는 자동 취소됨.** 지우기가 필요하면 엣지 함수(supabase-js `.delete()`)나 FK `on delete cascade`, 트리거 대신 DO 블록 조건(`if not exists ... create trigger`)으로 우회.
