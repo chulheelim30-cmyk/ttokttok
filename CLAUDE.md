@@ -47,6 +47,12 @@
 - 시험은 DO 블록 안에서 `set_config('request.jwt.claims', ...)`로 사용자 흉내 → 끝에 `raise exception`으로 되돌리기.
 - 실제 API 시험은 `net.http_post`로 익명 가입 → 토큰으로 호출(셸에서는 supabase·github.io 접속 막힘).
 
+## 별개 앱: 아이곁 (`aigyeot/`, 11/12)
+- 아픈 반려동물 케어 기록 웹앱. 톡톡과 무관, 같은 저장소·같은 Supabase 프로젝트만 빌려 씀. 주소 https://chulheelim30-cmyk.github.io/ttokttok/aigyeot/
+- `aigyeot/index.html` 한 파일. 가입 없음, 가족 링크 `?g=<코드40자>`로만 접근. 이름은 기기별 localStorage `aigyeot-name`.
+- DB: `aigyeot_family`(code, pet jsonb) · `aigyeot_log`(hidden=숨김 삭제) · `aigyeot_check`(off=체크 해제). RLS 켜고 anon 직접 접근 막음, RPC만: ag_create, ag_get, ag_save_pet, ag_add_log, ag_hide_log, ag_set_check, ag_stamp(15초마다 변경 확인).
+- `sw.js`는 /aigyeot/ 요청을 건드리지 않게 해 둠(톡톡 오프라인 캐시가 덮어쓰지 않도록).
+
 ## 막힌 것 / 우회
 - 셸에서 *.supabase.co, *.github.io, dl.google.com 접속 불가. GitHub API는 됨(Actions 비밀 설정 API는 막힘).
 - 네이버 데이터랩 등 일부 사이트는 WebFetch 불가 → 사용자가 캡처를 보내 줌.
