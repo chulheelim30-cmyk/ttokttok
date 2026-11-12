@@ -4,10 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#FBF7F2">
+<script src="kakao.js?v=1"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="아이곁">
 <meta name="description" content="아픈 강아지·고양이 케어 기록. 급여량 계산, 투약·수액·증상 기록, 병원 요약을 가족과 함께.">
 <meta property="og:title" content="아이곁 — 아픈 아이 케어 기록">
 <meta property="og:description" content="가족이 함께 쓰는 반려동물 케어 기록">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="icon" href="icon-192.png">
 <title>아이곁 — 아픈 아이 케어 기록</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -142,8 +147,28 @@ const TYPES = {
   symptom: { ic: '🩺', name: '증상' },
   weight:  { ic: '⚖️', name: '체중' },
   potty:   { ic: '🚽', name: '배변·소변' },
+  lab:     { ic: '🧪', name: '검사' },
   note:    { ic: '📝', name: '메모' },
 };
+const LABS = [
+  { k: 'crea', n: '크레아티닌', u: 'mg/dL', re: /크레아?티닌|크레아틴|creat?i?n?i?n?e?|crea/i },
+  { k: 'bun', n: 'BUN', u: 'mg/dL', re: /bun|요소\s?질소|비유엔/i },
+  { k: 'sdma', n: 'SDMA', u: 'μg/dL', re: /sdma/i },
+  { k: 'phos', n: '인', u: 'mg/dL', re: /phos|인\s?수치|인산|(^|\s)인(?=\s?\d)/i },
+  { k: 'k', n: '칼륨', u: 'mEq/L', re: /칼륨|포타슘|(^|\s)k(?=\s?\d)/i },
+  { k: 'hct', n: '적혈구용적(HCT)', u: '%', re: /hct|pcv|헤마토크릿|적혈구\s?용적/i },
+  { k: 'usg', n: '요비중', u: '', re: /요비중|usg/i },
+  { k: 'glu', n: '혈당', u: 'mg/dL', re: /혈당|glu/i },
+];
+function labsIn(s) {
+  const v = {};
+  for (const L of LABS) {
+    const m = s.match(L.re); if (!m) continue;
+    const rest = s.slice(m.index + m[0].length).match(/^[^\d가-힣]{0,4}(?:[가-힣]{0,3}\s?)?(\d+(?:\.\d+)?)/);
+    if (rest) v[L.k] = +rest[1];
+  }
+  return v;
+}
 const SYMPTOMS = ['구토', '설사', '식욕 없음', '기운 없음', '물 안 마심', '물 많이 마심', '기침·재채기', '침 흘림', '숨이 가쁨', '입 벌리고 숨쉼', '발작', '소변 안 봄', '쓰러짐·의식 흐림', '잇몸 창백', '기타'];
 const URGENT = ['입 벌리고 숨쉼', '숨이 가쁨', '발작', '소변 안 봄', '쓰러짐·의식 흐림', '잇몸 창백'];
 const FACTORS = [
@@ -192,15 +217,28 @@ async function rpc(fn, body) {
 }
 function sbBackend(code) {
   const L = { pet: [], logs: [], checks: [] };
-  let st = { pet: null, logs: [], checks: [] }, stamp = null, loading = false, again = false;
-  try { const c = JSON.parse(ls.get('aigyeot-cache-' + code)); if (c) st = c; } catch (e) {}
+  const QK = 'aigyeot-q-' + code, CK = 'aigyeot-cache-' + code;
+  let st = { pet: null, logs: [], checks: [] }, stamp = null, loading = false, again = false, flushing = false;
+  let q = []; try { q = JSON.parse(ls.get(QK)) || []; } catch (e) {}
+  try { const c = JSON.parse(ls.get(CK)); if (c) st = c; } catch (e) {}
+  const saveQ = () => { ls.set(QK, JSON.stringify(q)); S.pending = q.length; renderBanner(); };
+  const saveC = () => ls.set(CK, JSON.stringify(st));
   const emit = () => { L.pet.forEach(f => f(st.pet, { fromCache: false })); L.logs.forEach(f => f(st.logs)); L.checks.forEach(f => f(st.checks)); };
+  function applyOp(s, op) {
+    const b = op.body;
+    if (op.fn === 'ag_save_pet') s.pet = JSON.parse(JSON.stringify(b.p_pet));
+    else if (op.fn === 'ag_add_log') { if (!s.logs.some(l => l.id === b.p_id)) s.logs = [{ ...b.p_data, id: b.p_id }, ...s.logs].sort((a, c) => c.t - a.t); }
+    else if (op.fn === 'ag_update_log') s.logs = s.logs.map(l => l.id === b.p_id ? { ...b.p_data, id: b.p_id } : l).sort((a, c) => c.t - a.t);
+    else if (op.fn === 'ag_hide_log') s.logs = s.logs.filter(l => l.id !== b.p_id);
+    else if (op.fn === 'ag_set_check') { s.checks = s.checks.filter(c => c.id !== b.p_id); if (b.p_data) s.checks.push({ ...b.p_data, id: b.p_id }); }
+  }
   async function load() {
     if (loading) { again = true; return; } loading = true; again = false;
     try {
       const r = await rpc('ag_get', { p_code: code });
       st = { pet: r.pet || null, logs: r.logs || [], checks: r.checks || [] }; stamp = r.stamp;
-      ls.set('aigyeot-cache-' + code, JSON.stringify(st));
+      q.forEach(op => applyOp(st, op));
+      saveC();
       if (S.slow) { S.slow = false; renderBanner(); }
       emit();
     } catch (e) {
@@ -208,28 +246,43 @@ function sbBackend(code) {
       else { S.slow = true; renderBanner(); }
     } finally { loading = false; if (again) load(); }
   }
+  async function flush() {
+    if (flushing || !q.length) return; flushing = true;
+    try {
+      while (q.length) {
+        try { await rpc(q[0].fn, q[0].body); }
+        catch (e) { if (e.code === 'offline') break; console.warn('drop', e); }
+        q.shift(); saveQ();
+      }
+    } finally { flushing = false; }
+    if (!q.length) { toast('보관해 둔 기록을 모두 보냈어요'); stamp = null; load(); }
+  }
+  async function send(fn, body) {
+    const op = { fn, body: { p_code: code, ...body } };
+    applyOp(st, op); saveC(); emit();
+    if (q.length || navigator.onLine === false) { q.push(op); saveQ(); flush(); return; }
+    try { await rpc(fn, op.body); }
+    catch (e) { if (e.code === 'offline') { q.push(op); saveQ(); return; } throw e; }
+    stamp = null; load();
+  }
   async function poll() {
     if (document.hidden) return;
+    if (q.length) { flush(); return; }
     try { const s = await rpc('ag_stamp', { p_code: code }); if (s !== stamp) load(); } catch (e) {}
   }
   setInterval(poll, 15000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
-  setTimeout(() => { if (st.pet || st.logs.length) emit(); load(); });
+  window.addEventListener('online', () => { flush(); load(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { flush(); load(); } });
+  S.pending = q.length;
+  setTimeout(() => { if (st.pet || st.logs.length) emit(); renderBanner(); flush(); load(); });
   const sub = k => cb => { L[k].push(cb); return () => {}; };
-  const after = () => { stamp = null; load(); };
   return {
-    subPet: sub('pet'), subLogs: sub('logs'), subChecks: sub('checks'), refresh: after,
-    async savePet(d) { st.pet = JSON.parse(JSON.stringify(d)); emit(); await rpc('ag_save_pet', { p_code: code, p_pet: d }); after(); },
-    async addLog(d) {
-      const id = Date.now().toString(36) + uid();
-      st.logs = [{ ...d, id }, ...st.logs].sort((a, b) => b.t - a.t); emit();
-      await rpc('ag_add_log', { p_code: code, p_id: id, p_data: d }); after();
-    },
-    async delLog(id) { st.logs = st.logs.filter(l => l.id !== id); emit(); await rpc('ag_hide_log', { p_code: code, p_id: id }); after(); },
-    async setCheck(id, d) {
-      st.checks = st.checks.filter(c => c.id !== id); if (d) st.checks.push({ ...d, id }); emit();
-      await rpc('ag_set_check', { p_code: code, p_id: id, p_data: d }); after();
-    },
+    subPet: sub('pet'), subLogs: sub('logs'), subChecks: sub('checks'), refresh: () => { stamp = null; load(); },
+    savePet: d => send('ag_save_pet', { p_pet: d }),
+    addLog: d => send('ag_add_log', { p_id: Date.now().toString(36) + uid(), p_data: d }),
+    updLog: (id, d) => send('ag_update_log', { p_id: id, p_data: d }),
+    delLog: id => send('ag_hide_log', { p_id: id }),
+    setCheck: (id, d) => send('ag_set_check', { p_id: id, p_data: d }),
   };
 }
 async function write(fn) {
@@ -255,7 +308,8 @@ function setMode(m) {
 }
 function renderBanner() {
   let h = '';
-  if (S.slow && S.mode === 'shared') h = '<div class="banner">기록 저장소에 연결하지 못했어요. 인터넷 연결을 확인해주세요. 보이는 기록은 마지막으로 받아온 내용이에요.</div>';
+  if (S.pending) h = `<div class="banner" style="background:var(--blue-soft);color:#2F4C77">인터넷이 끊겨서 기록 ${S.pending}건을 이 휴대폰에 보관 중이에요. 연결되면 자동으로 보낼게요.</div>`;
+  else if (S.slow && S.mode === 'shared') h = '<div class="banner">기록 저장소에 연결하지 못했어요. 인터넷 연결을 확인해주세요. 보이는 기록은 마지막으로 받아온 내용이에요.</div>';
   $('#banner').innerHTML = h;
 }
 function start(b) {
@@ -312,6 +366,21 @@ function render(force) {
 }
 $('#main').addEventListener('focusout', () => setTimeout(() => { if (pendingRender) render(); }, 50));
 
+/* ----- install ----- */
+const isStandalone = () => { try { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } };
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); S.installEvt = e; render(); });
+window.addEventListener('appinstalled', () => { S.installEvt = null; toast('홈 화면에 추가했어요'); render(); });
+function installHow() {
+  if (S.installEvt) return `<button class="btn acc full" data-act="install">홈 화면에 앱으로 추가</button>`;
+  return `<div class="note">${isIOS ? 'Safari 아래쪽 <b>공유 버튼(□↑)</b> → <b>홈 화면에 추가</b>를 눌러주세요.' : '크롬 오른쪽 위 <b>⋮</b> → <b>홈 화면에 추가</b>(또는 <b>앱 설치</b>)를 눌러주세요.'}</div>`;
+}
+function installTip() {
+  if (isStandalone() || ls.get('aigyeot-install-hide') || !S.me) return '';
+  return `<div class="card"><div class="row between"><h3 style="margin:0">📲 홈 화면에 앱으로 두기</h3><button class="x" data-act="install-hide" style="border:0;background:none;color:var(--sub)">닫기</button></div><p class="muted" style="margin:6px 0 10px">아이콘을 누르면 바로 열려요.</p>${installHow()}</div>`;
+}
+if ('serviceWorker' in navigator) window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+
 /* ----- landing ----- */
 function vLanding() {
   return `<div class="card" style="padding:22px 18px">
@@ -321,7 +390,9 @@ function vLanding() {
     <p class="muted" style="margin:0 0 4px">급여량 계산, 투약·수액·증상 기록, 병원에 보여줄 요약까지 한곳에서.</p>
     <p class="muted" style="margin:0 0 16px">가입 없이 시작하고, 만든 링크를 가족에게 보내면 같이 기록할 수 있어요.</p>
     <button class="btn acc full" data-act="create">우리 아이 케어 기록 시작하기</button>
-    <p class="muted" style="margin:12px 0 0">가족이 이미 만들었다면, 가족에게 받은 링크로 열어주세요.</p></div>`;
+    <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px"><b style="font-size:14px">가족이 이미 만들었나요?</b>
+    <p class="muted" style="margin:4px 0 8px">가족에게 받은 링크를 열거나, 여기에 붙여넣어 주세요.</p>
+    <div class="row"><input type="text" id="join" placeholder="링크 붙여넣기"><button class="btn ghost sm" data-act="join" style="white-space:nowrap">들어가기</button></div></div></div>`;
 }
 function nameCard() {
   if (S.me) return '';
@@ -336,7 +407,7 @@ function vToday() {
   const p = S.pet;
   if (!p && S.petLoaded) return `<div class="card"><h3>처음 오셨네요</h3><p class="muted">아이 이름과 체중만 넣으면 바로 시작할 수 있어요.</p><button class="btn acc full" data-act="go-set">아이 정보 넣기</button></div>` + quickCard() + recentCard();
   if (!p) return `<div class="card muted">불러오는 중…</div>`;
-  return nameCard() + writeCard() + kcalCard() + checklistCard() + quickCard() + recentCard();
+  return nameCard() + installTip() + writeCard() + kcalCard() + checklistCard() + quickCard() + recentCard();
 }
 function writeCard() {
   const P = S.parsed;
@@ -347,7 +418,7 @@ function writeCard() {
   if (P && P.entries.length) {
     const urgent = P.entries.flatMap(e => e.type === 'symptom' ? (e.symptoms || []).filter(s => URGENT.includes(s)) : e.type === 'potty' && e.pee === '안 봄' ? ['소변 안 봄'] : []);
     h += `<div style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px"><div class="row between"><b style="font-size:14px">이렇게 정리했어요 (${P.entries.length}건)</b><span class="muted">${P.ai ? 'Claude가 정리' : '기본 정리'}</span></div>
-      ${P.entries.map((e, i) => { const t = TYPES[e.type] || TYPES.note; return `<div class="log"><div class="ic">${t.ic}</div><div class="body"><div><b>${t.name}</b> ${logText(e)}</div>${e.memo ? `<div class="muted">${esc(e.memo)}</div>` : ''}<div class="t">${dayLabel(dkey(e.t))} ${hm(e.t)}${e.timeGuess ? ' (시간 미기재 → 지금)' : ''}</div></div><button class="x" data-act="p-del" data-i="${i}">빼기</button></div>`; }).join('')}
+      ${P.entries.map((e, i) => { const t = TYPES[e.type] || TYPES.note; return `<div class="log"><div class="ic">${t.ic}</div><div class="body"><div><b>${t.name}</b> ${logText(e)}</div>${e.memo ? `<div class="muted">${esc(e.memo)}</div>` : ''}<div class="t">${dayLabel(dkey(e.t))} ${hm(e.t)}${e.dateOnly ? ' (시간 미기재)' : e.timeGuess ? ' (시간 미기재 → 지금)' : ''}</div></div><button class="x" data-act="p-del" data-i="${i}">빼기</button></div>`; }).join('')}
       ${P.taskIds.length ? `<div class="muted" style="margin-top:6px">✓ 오늘 할 일 체크: ${esc(P.taskIds.map(id => (S.pet.tasks || []).find(t => t.id === id)?.label).filter(Boolean).join(', '))}</div>` : ''}
       ${urgent.length ? `<div class="alertbox"><b>⚠️ 바로 병원에 연락하세요</b>${esc([...new Set(urgent)].join(', '))}은(는) 빨리 진료가 필요할 수 있는 증상이에요. 다니는 병원이 닫았다면 가까운 24시 동물병원에 전화해주세요.<div style="margin-top:8px"><button class="btn sm" style="background:var(--warn)" data-act="tab" data-to="er">가까운 병원 찾기</button></div></div>` : ''}
       <div class="two" style="margin-top:12px"><button class="btn ghost" data-act="p-cancel">다시 쓰기</button><button class="btn" data-act="p-save">모두 저장</button></div></div>`;
@@ -368,7 +439,7 @@ function kcalCard() {
     <div class="muted">${eaten >= tgt ? '오늘 목표를 채웠어요.' : `남은 양 약 ${r0(tgt - eaten)} kcal`}</div></div>`;
 }
 function quickCard() {
-  return `<div class="card"><h3>하나씩 골라서 기록하기</h3><div class="grid4">${Object.entries(TYPES).map(([k, t]) => `<button class="qbtn" data-act="new" data-type="${k}"><span class="ic">${t.ic}</span>${t.name}</button>`).join('')}<button class="qbtn" data-act="tab" data-to="calc"><span class="ic">🧮</span>계산기</button></div></div>`;
+  return `<div class="card"><h3>하나씩 골라서 기록하기</h3><div class="grid4">${Object.entries(TYPES).map(([k, t]) => `<button class="qbtn" data-act="new" data-type="${k}"><span class="ic">${t.ic}</span>${t.name}</button>`).join('')}</div><p class="muted" style="margin:8px 2px 0">기록을 누르면 고칠 수 있어요.</p></div>`;
 }
 function checklistCard() {
   const tasks = S.pet?.tasks || [];
@@ -392,17 +463,23 @@ function logText(l) {
     case 'symptom': return `${esc((l.symptoms || []).join(', ') || '증상')} · ${['', '약함', '중간', '심함'][l.severity || 1]}`;
     case 'weight': return `${l.kg}kg`;
     case 'potty': return [l.pee && '소변 ' + esc(l.pee), l.poop && '대변 ' + esc(l.poop)].filter(Boolean).join(' · ') || '배변';
+    case 'lab': return LABS.filter(L => l.values && l.values[L.k] != null).map(L => `${L.n} ${l.values[L.k]}`).join(' · ') || '검사';
     default: return '';
   }
 }
 function logRow(l) {
   const t = TYPES[l.type] || TYPES.note;
   const main = logText(l);
-  return `<div class="log ${l.alert ? 'alert' : ''}"><div class="ic">${t.ic}</div><div class="body"><div><b>${t.name}</b> ${main}</div>${l.memo ? `<div class="muted">${esc(l.memo)}</div>` : ''}<div class="t">${hm(l.t)}${l.by ? ' · ' + esc(who(l.by)) : ''}</div></div><button class="x" data-act="del" data-id="${esc(l.id)}">삭제</button></div>`;
+  return `<div class="log ${l.alert ? 'alert' : ''}"><div class="ic">${t.ic}</div><div class="body" data-act="edit" data-id="${esc(l.id)}" style="cursor:pointer"><div><b>${t.name}</b> ${main}</div>${l.memo ? `<div class="muted">${esc(l.memo)}</div>` : ''}<div class="t">${hm(l.t)}${l.by ? ' · ' + esc(who(l.by)) : ''}</div></div><button class="x" data-act="del" data-id="${esc(l.id)}">삭제</button></div>`;
 }
 
 /* ----- logs ----- */
 function vLogs() {
+  const seg = `<div class="chips" style="margin-bottom:10px"><button class="chip ${S.logView !== 'chart' ? 'on' : ''}" data-act="logview" data-v="list">📋 목록</button><button class="chip ${S.logView === 'chart' ? 'on' : ''}" data-act="logview" data-v="chart">📈 그래프</button></div>`;
+  if (S.logView === 'chart') return seg + vCharts();
+  return seg + vList();
+}
+function vList() {
   const list = S.logs.filter(l => S.filter === 'all' || l.type === S.filter);
   let h = `<div class="chips" style="margin-bottom:10px"><button class="chip ${S.filter === 'all' ? 'on' : ''}" data-act="filter" data-f="all">전체</button>${Object.entries(TYPES).map(([k, t]) => `<button class="chip ${S.filter === k ? 'on' : ''}" data-act="filter" data-f="${k}">${t.ic} ${t.name}</button>`).join('')}</div>`;
   if (!list.length) return h + `<div class="card muted">기록이 없어요.</div>`;
@@ -410,6 +487,58 @@ function vLogs() {
   h += '<div class="card" style="padding-top:4px">';
   list.forEach(l => { const k = dkey(l.t); if (k !== cur) { if (cur) h += '</div>'; cur = k; h += `<div class="daylbl">${dayLabel(k)}</div><div>`; } h += logRow(l); });
   return h + '</div></div>';
+}
+
+/* ----- charts ----- */
+function lineChart(pts, opt) {
+  const W = 320, H = 150, L = 34, R = 12, T = 18, B = 26;
+  if (!pts.length) return '';
+  const xs = pts.map(p => p.t), ys = pts.map(p => p.v);
+  let x0 = Math.min(...xs), x1 = Math.max(...xs); if (x1 === x0) { x0 -= 864e5; x1 += 864e5; }
+  let y0 = Math.min(...ys), y1 = Math.max(...ys); const pad = (y1 - y0) * 0.2 || Math.abs(y1) * 0.1 || 1; y0 -= pad; y1 += pad;
+  const X = t => L + (t - x0) / (x1 - x0) * (W - L - R), Y = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+  const fmt = v => Math.abs(v) >= 100 ? r0(v) : Math.abs(v) < 10 ? Math.round(v * 100) / 100 : r1(v);
+  const d = pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ' ' + Y(p.v).toFixed(1)).join(' ');
+  const showAll = pts.length <= 7;
+  const md = t => { const x = new Date(t); return (x.getMonth() + 1) + '/' + x.getDate(); };
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+    ${[y0 + pad, (y0 + y1) / 2, y1 - pad].map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#EEE7DF"/><text x="${L - 6}" y="${Y(v) + 4}" font-size="10" fill="#9A9087" text-anchor="end">${fmt(v)}</text>`).join('')}
+    <path d="${d}" fill="none" stroke="${opt.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p, i) => `<circle cx="${X(p.t)}" cy="${Y(p.v)}" r="${i === pts.length - 1 ? 4.5 : 3.5}" fill="${i === pts.length - 1 ? opt.color : '#fff'}" stroke="${opt.color}" stroke-width="2"/>${showAll || i === pts.length - 1 ? `<text x="${X(p.t)}" y="${Y(p.v) - 9}" font-size="11" font-weight="700" fill="#2D2A26" text-anchor="middle">${fmt(p.v)}</text>` : ''}`).join('')}
+    <text x="${L}" y="${H - 6}" font-size="10" fill="#9A9087">${md(pts[0].t)}</text>
+    <text x="${W - R}" y="${H - 6}" font-size="10" fill="#9A9087" text-anchor="end">${md(pts[pts.length - 1].t)}</text>
+  </svg>`;
+}
+function barChart(days, target) {
+  const W = 320, H = 150, L = 34, R = 8, T = 16, B = 24;
+  const max = Math.max(target || 0, ...days.map(d => d.v), 1) * 1.15;
+  const bw = (W - L - R) / days.length;
+  const Y = v => T + (1 - v / max) * (H - T - B);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+    ${days.map((d, i) => { const x = L + i * bw + bw * 0.18, w = bw * 0.64, ok = target && d.v >= target * 0.9; return `<rect x="${x}" y="${Y(d.v)}" width="${w}" height="${Math.max(0, H - B - Y(d.v))}" rx="3" fill="${d.v ? (ok ? '#3D8B7D' : '#E07A5F') : '#EEE7DF'}"/>${i % 2 === 1 || i === days.length - 1 ? `<text x="${x + w / 2}" y="${H - 8}" font-size="9.5" fill="#9A9087" text-anchor="middle">${d.label}</text>` : ''}`; }).join('')}
+    ${target ? `<line x1="${L}" x2="${W - R}" y1="${Y(target)}" y2="${Y(target)}" stroke="#2D2A26" stroke-dasharray="4 4" opacity=".5"/><text x="${L - 6}" y="${Y(target) + 4}" font-size="10" fill="#2D2A26" text-anchor="end">${r0(target)}</text>` : ''}
+  </svg>`;
+}
+function vCharts() {
+  const p = S.pet || {}, asc = S.logs.slice().sort((a, b) => a.t - b.t);
+  let h = `<button class="btn acc full" data-act="new" data-type="lab" style="margin-bottom:12px">🧪 검사 수치 넣기</button>`;
+  const labs = asc.filter(l => l.type === 'lab' && l.values);
+  const shown = LABS.filter(L => labs.some(l => l.values[L.k] != null));
+  if (shown.length) shown.forEach(L => {
+    const pts = labs.filter(l => l.values[L.k] != null).map(l => ({ t: l.t, v: +l.values[L.k] }));
+    const last = pts[pts.length - 1], prev = pts[pts.length - 2];
+    const diff = prev ? last.v - prev.v : null;
+    h += `<div class="card"><div class="row between"><h3 style="margin:0">${L.n} <span class="muted" style="font-weight:400">${L.u}</span></h3>${diff != null ? `<span class="muted">지난번보다 ${diff > 0 ? '▲' : diff < 0 ? '▼' : ''} ${r1(Math.abs(diff))}</span>` : ''}</div>${lineChart(pts, { color: '#4A6FA5' })}</div>`;
+  });
+  else h += `<div class="card"><h3>검사 수치</h3><p class="muted" style="margin:0">병원에서 받은 혈액검사 수치(크레아티닌, BUN, SDMA, 인 등)를 넣으면 변화가 그래프로 보여요. "그냥 쭉 적어주세요"에 "크레아티닌 3.2 BUN 45"처럼 적어도 돼요.</p></div>`;
+  const ws = asc.filter(l => l.type === 'weight' && num(l.kg)).map(l => ({ t: l.t, v: num(l.kg) }));
+  const dw = ws.length > 1 ? Math.round((ws[ws.length - 1].v - ws[0].v) * 100) / 100 : null;
+  h += `<div class="card"><div class="row between"><h3 style="margin:0">체중 <span class="muted" style="font-weight:400">kg</span></h3>${dw != null ? `<span class="muted">처음보다 ${dw >= 0 ? '+' : ''}${dw}kg</span>` : ''}</div>${ws.length ? lineChart(ws.slice(-30), { color: '#E07A5F' }) : '<p class="muted" style="margin:6px 0 0">체중을 기록하면 그래프가 생겨요.</p>'}</div>`;
+  const days = []; for (let i = 13; i >= 0; i--) { const k = dkey(Date.now() - i * 864e5); const d = new Date(k + 'T00:00'); days.push({ k, label: (d.getMonth() + 1) + '/' + d.getDate(), v: 0 }); }
+  S.logs.forEach(l => { if (l.type === 'feed' && num(l.kcal)) { const d = days.find(x => x.k === dkey(l.t)); if (d) d.v += num(l.kcal); } });
+  const ft = fullTarget(p);
+  h += `<div class="card"><h3>하루 먹은 칼로리 (최근 2주)</h3>${days.some(d => d.v) ? barChart(days, ft) + `<p class="muted" style="margin:6px 0 0">${ft ? `점선은 하루 목표 ${r0(ft)}kcal, 초록은 목표의 90% 이상 먹은 날이에요.` : '급여 계산기에서 체중을 저장하면 목표선이 생겨요.'}</p>` : '<p class="muted" style="margin:6px 0 0">사료를 등록하고 급여를 기록하면 칼로리가 쌓여요.</p>'}</div>`;
+  return h;
 }
 
 /* ----- calculator ----- */
@@ -526,6 +655,9 @@ function buildSummary(days) {
   if (fl.length) lines.push('', '■ 피하수액', `${fl.length}회, 총 ${fl.reduce((s, f) => s + (num(f.ml) || 0), 0)}ml (회당 ${[...new Set(fl.map(f => f.ml))].join('/')}ml)`);
   const pt = L.filter(l => l.type === 'potty');
   if (pt.length) { lines.push('', '■ 배변·소변'); pt.slice(-10).forEach(x => lines.push(`${dkey(x.t).slice(5)} ${hm(x.t)}  ${[x.pee && '소변 ' + x.pee, x.poop && '대변 ' + x.poop].filter(Boolean).join(', ')}`)); }
+  const allLabs = S.logs.filter(l => l.type === 'lab' && l.values).slice().sort((a, b) => a.t - b.t);
+  const labLines = LABS.map(Lb => { const ps = allLabs.filter(l => l.values[Lb.k] != null); if (!ps.length) return null; const last = ps[ps.length - 1]; return `${Lb.n} ${last.values[Lb.k]}${Lb.u ? ' ' + Lb.u : ''} (${dkey(last.t).slice(5)})${ps.length > 1 ? ` ← 이전 ${ps[ps.length - 2].values[Lb.k]} (${dkey(ps[ps.length - 2].t).slice(5)})` : ''}`; }).filter(Boolean);
+  if (labLines.length) lines.push('', '■ 최근 검사 수치', ...labLines);
   const nt = L.filter(l => l.type === 'note' || ((l.type === 'feed' || l.type === 'med') && l.memo));
   if (nt.length) { lines.push('', '■ 메모'); nt.slice(-8).forEach(n => lines.push(`${dkey(n.t).slice(5)}  ${n.memo || ''}`)); }
   if (p.questions) lines.push('', '■ 선생님께 여쭤볼 것', p.questions);
@@ -658,6 +790,7 @@ function vSet() {
     <div class="row" style="margin-top:10px"><input type="text" id="t-label" placeholder="예: 저녁 수액 100ml"><button class="btn ghost sm" data-act="task-add" style="white-space:nowrap">추가</button></div>
     ${tasks.length ? '' : `<button class="btn ghost sm" data-act="task-default" style="margin-top:8px">자주 쓰는 할 일 한 번에 넣기</button>`}</div>
 
+  ${isStandalone() ? '' : `<div class="card"><h3>홈 화면에 앱으로 두기</h3>${installHow()}${isIOS ? '<p class="muted" style="margin:8px 0 0">아이폰은 홈 화면 앱이 처음 열릴 때 가족 링크를 한 번 붙여넣어야 할 수 있어요. 아래 링크를 미리 복사해 두세요.</p>' : ''}</div>`}
   <div class="card"><h3>가족과 같이 쓰기</h3>
     <p class="muted" style="margin:0 0 8px">이 링크를 가족에게 보내면, 가입 없이 바로 같은 기록을 보고 남길 수 있어요.</p>
     <input type="text" readonly value="${esc(shareLink())}" onclick="this.select()" style="font-size:13px">
@@ -671,9 +804,8 @@ async function savePet(p, msg) { if (await write(() => backend.savePet(p))) { S.
 
 /* ---------- sheet (new log) ---------- */
 let F = null;
-function openSheet(type) {
-  if (S.readOnly) { toast('보기 전용이라 기록할 수 없어요'); return; }
-  F = { type, symptoms: [], severity: 1, pee: '', poop: '' };
+function openSheet(type, E) {
+  F = { type, symptoms: [], severity: 1, pee: '', poop: '', editId: E?.id || null, by: E ? (E.by ?? null) : undefined };
   const t = TYPES[type], p = S.pet || {}, foods = p.foods || [];
   const prevMeds = [...new Set(S.logs.filter(l => l.type === 'med').map(l => l.name).filter(Boolean))];
   const lastFluid = S.logs.find(l => l.type === 'fluid');
@@ -698,17 +830,45 @@ function openSheet(type) {
   } else if (type === 'weight') {
     body = `<label class="f">체중 (kg)</label><input type="number" step="0.01" inputmode="decimal" id="n-kg" value="${esc(p.weightKg ?? '')}">
       <label class="f" style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="n-upd" checked style="width:20px;height:20px"> 급여 계산에도 이 체중 쓰기</label>`;
+  } else if (type === 'lab') {
+    body = `<p class="muted" style="margin:4px 0 0">검사지에 있는 것만 넣으면 돼요.</p><div class="two">${LABS.map(L => `<div><label class="f">${L.n}${L.u ? ` (${L.u})` : ''}</label><input type="number" step="any" inputmode="decimal" data-lab="${L.k}"></div>`).join('')}</div>`;
   } else if (type === 'potty') {
     body = `<label class="f">소변</label><div class="chips" id="n-pee">${['정상', '많음', '적음', '안 봄', '피 섞임'].map(s => `<button class="chip ${s === '안 봄' || s === '피 섞임' ? 'danger' : ''}" data-act="pee" data-v="${s}">${s}</button>`).join('')}</div>
       <label class="f">대변</label><div class="chips" id="n-poop">${['정상', '무름', '설사', '변비', '안 봄'].map(s => `<button class="chip" data-act="poop" data-v="${s}">${s}</button>`).join('')}</div><div id="n-alert"></div>`;
   }
-  $('#sheet').innerHTML = `<div class="grab"></div><h2>${t.ic} ${t.name} 기록</h2>${body}
+  $('#sheet').innerHTML = `<div class="grab"></div><h2>${t.ic} ${t.name} ${E ? '고치기' : '기록'}</h2>${E?.by ? `<p class="muted" style="margin:0">${esc(E.by)}님이 남긴 기록</p>` : ''}${body}
     <label class="f">${type === 'note' ? '내용' : '메모 (선택)'}</label><textarea id="n-memo" placeholder="${type === 'note' ? '오늘 상태, 병원에서 들은 말 등' : ''}"></textarea>
     <label class="f">시간</label><input type="datetime-local" id="n-time" value="${localDT(Date.now())}">
     <div class="two" style="margin-top:16px"><button class="btn ghost" data-act="close">취소</button><button class="btn acc" data-act="save-log">저장</button></div>`;
   $('#sheet').classList.add('open'); $('#sheetBg').classList.add('open');
+  if (E) fillSheet(E);
   if (type === 'feed') feedUpdate();
 }
+function fillSheet(E) {
+  const set = (sel, v) => { const el = $(sel); if (el && v != null) el.value = v; };
+  set('#n-memo', E.memo || ''); set('#n-time', localDT(E.t));
+  if (E.type === 'feed') {
+    const f = (S.pet?.foods || []).find(f => f.name === E.food);
+    if ($('#n-food')) $('#n-food').value = f ? f.id : '';
+    if (!f) { $('#n-foodfree')?.classList.remove('hidden'); set('#n-foodname', E.food || ''); }
+    set('#n-amount', E.amount); if (E.method) set('#n-method', E.method);
+  } else if (E.type === 'med') { set('#n-name', E.name); set('#n-dose', E.dose || ''); }
+  else if (E.type === 'fluid') set('#n-ml', E.ml);
+  else if (E.type === 'weight') { set('#n-kg', E.kg); if ($('#n-upd')) $('#n-upd').checked = false; }
+  else if (E.type === 'lab') document.querySelectorAll('[data-lab]').forEach(el => { const v = E.values?.[el.dataset.lab]; if (v != null) el.value = v; });
+  else if (E.type === 'symptom') {
+    F.symptoms = [...(E.symptoms || [])]; F.severity = E.severity || 1;
+    document.querySelectorAll('#n-sym .chip').forEach(c => c.classList.toggle('on', F.symptoms.includes(c.dataset.v)));
+    document.querySelectorAll('#n-sev .chip').forEach(c => c.classList.toggle('on', +c.dataset.v === F.severity));
+    urgentCheck();
+  } else if (E.type === 'potty') {
+    F.pee = E.pee || ''; F.poop = E.poop || '';
+    document.querySelectorAll('#n-pee .chip').forEach(c => c.classList.toggle('on', c.dataset.v === F.pee));
+    document.querySelectorAll('#n-poop .chip').forEach(c => c.classList.toggle('on', c.dataset.v === F.poop));
+    urgentCheck();
+  }
+}
+
 function closeSheet() { $('#sheet').classList.remove('open'); $('#sheetBg').classList.remove('open'); F = null; if (pendingRender) render(); }
 $('#sheetBg').addEventListener('click', closeSheet);
 function curFood() { const id = $('#n-food')?.value; return (S.pet?.foods || []).find(f => f.id === id) || null; }
@@ -728,7 +888,7 @@ function urgentCheck() {
 }
 async function saveLog() {
   const tv = $('#n-time').value; const t = tv ? new Date(tv).getTime() : Date.now();
-  const d = { type: F.type, t, by: S.me || null, memo: $('#n-memo').value.trim() || null };
+  const d = { type: F.type, t, by: F.editId ? F.by : (S.me || null), memo: $('#n-memo').value.trim() || null };
   const p = S.pet;
   if (F.type === 'feed') {
     const f = curFood(), amt = num($('#n-amount').value);
@@ -749,17 +909,23 @@ async function saveLog() {
   } else if (F.type === 'potty') {
     if (!F.pee && !F.poop) return toast('소변이나 대변 상태를 골라주세요');
     Object.assign(d, { pee: F.pee || null, poop: F.poop || null, alert: F.pee === '안 봄' || F.pee === '피 섞임' });
+  } else if (F.type === 'lab') {
+    const v = {}; document.querySelectorAll('[data-lab]').forEach(el => { const n = num(el.value); if (n != null) v[el.dataset.lab] = n; });
+    if (!Object.keys(v).length) return toast('수치를 하나 이상 넣어주세요');
+    d.values = v;
   } else if (F.type === 'note') {
     if (!d.memo) return toast('내용을 적어주세요');
   }
   const btn = document.querySelector('[data-act="save-log"]'); if (btn) btn.disabled = true;
-  const ok = await write(() => backend.addLog(d));
+  const editing = F.editId;
+  const ok = await write(() => editing ? backend.updLog(editing, d) : backend.addLog(d));
   if (btn) btn.disabled = false;
   if (!ok) return;
-  if (F.type === 'weight' && $('#n-upd').checked && p) {
+  const newestW = S.logs.filter(l => l.type === 'weight' && l.id !== editing).every(l => l.t <= d.t);
+  if (F.type === 'weight' && $('#n-upd')?.checked && p && newestW) {
     const np = petBase(); np.weightKg = d.kg; await write(() => backend.savePet(np)); S.pet = np; C = null;
   }
-  closeSheet(); toast('기록했어요');
+  closeSheet(); toast(editing ? '고쳤어요' : '기록했어요');
 }
 
 /* ---------- free text → entries ---------- */
@@ -771,9 +937,11 @@ function normEntry(e) {
   const p = S.pet || {}, foods = p.foods || [];
   const type = TYPES[e.type] ? e.type : 'note';
   const o = { type, memo: e.memo ? String(e.memo).slice(0, 300) : null };
-  if (e.time && /^\d{1,2}:\d{2}$/.test(e.time)) { const [h, m] = e.time.split(':').map(Number); o.t = atTime(h, m, num(e.dayOffset) || 0); }
+  if (e.date && /^\d{4}-\d{2}-\d{2}$/.test(e.date)) { const [hh, mm] = e.time && /^\d{1,2}:\d{2}$/.test(e.time) ? e.time.split(':').map(Number) : [12, 0]; const d = new Date(e.date + 'T00:00'); d.setHours(hh, mm, 0, 0); o.t = d.getTime(); if (!e.time) o.dateOnly = true; }
+  else if (e.time && /^\d{1,2}:\d{2}$/.test(e.time)) { const [h, m] = e.time.split(':').map(Number); o.t = atTime(h, m, num(e.dayOffset) || 0); }
+  else if (num(e.dayOffset)) { o.t = Date.now() + num(e.dayOffset) * 864e5; o.timeGuess = true; }
   else { o.t = Date.now(); o.timeGuess = true; }
-  if (o.t > Date.now() + 30 * 60e3 && !num(e.dayOffset)) o.t -= 864e5;
+  if (o.t > Date.now() + 30 * 60e3 && !num(e.dayOffset) && !e.date) o.t -= 864e5;
   if (type === 'feed') {
     const f = foods.find(f => f.id === e.foodId) || foods.find(f => e.food && (f.name.includes(e.food) || String(e.food).includes(f.name)));
     o.food = f ? f.name : (e.food || '급여'); o.amount = num(e.amount); o.unit = e.unit || (f ? f.unit : '');
@@ -784,6 +952,7 @@ function normEntry(e) {
   else if (type === 'symptom') { o.symptoms = (Array.isArray(e.symptoms) ? e.symptoms : []).map(String).slice(0, 8); if (!o.symptoms.length) o.symptoms = ['기타']; o.severity = [1, 2, 3].includes(+e.severity) ? +e.severity : 1; o.alert = o.symptoms.some(s => URGENT.includes(s)); }
   else if (type === 'weight') { o.kg = num(e.kg); if (!o.kg) { o.type = 'note'; } }
   else if (type === 'potty') { o.pee = e.pee || null; o.poop = e.poop || null; o.alert = o.pee === '안 봄' || o.pee === '피 섞임'; }
+  else if (type === 'lab') { o.values = {}; for (const L of LABS) { const n = num(e.values?.[L.k]); if (n != null) o.values[L.k] = n; } if (!Object.keys(o.values).length) o.type = 'note'; }
   if (o.type === 'note' && !o.memo) o.memo = e.src || '';
   return o;
 }
@@ -822,7 +991,7 @@ function ruleParse(text) {
   const p = S.pet || {}, foods = p.foods || [];
   const prevMeds = [...new Set(S.logs.filter(l => l.type === 'med').map(l => l.name).filter(Boolean))];
   const parts = text.split(/\n|\.(?!\d)|[。!?]|,(?!\d)|그리고|그 다음|(?<=[했었였았봤쌌줬])고\s|(?<!오전|오후|아침|점심|저녁|밤|새벽)\s(?=(?:오전|오후|아침|점심|저녁|밤|새벽)?\s?\d{1,2}\s?시(?!간))/).map(s => (s || '').trim()).filter(Boolean);
-  const out = []; let lastTime = null;
+  const out = []; let lastTime = null, lastDate = null;
   const SYM = [[/입\s?벌리|개구호흡|헐떡/, '입 벌리고 숨쉼'], [/숨.{0,4}(가쁘|가빠|차|빨라|몰아)|호흡/, '숨이 가쁨'], [/발작|경련/, '발작'], [/쓰러|의식/, '쓰러짐·의식 흐림'], [/구토|토(했|함|해|하|를|사|가|도|\s*\d\s?번)|\s토\s*$|^토\s*$|게웠|게워|헛구역/, '구토'], [/설사|묽은\s?변/, '설사'], [/(밥|사료|캔|아무것도|하나도).{0,6}안\s?먹|안\s?먹(어|음|는|었|고)|식욕|밥\s?거부/, '식욕 없음'], [/기운|처져|축\s?늘어|무기력|힘없/, '기운 없음'], [/기침|재채기/, '기침·재채기'], [/침\s?흘|침을\s?흘/, '침 흘림'], [/잇몸.{0,6}(하얗|하얘|하얀|허옇|창백|희)/, '잇몸 창백'], [/물.{0,6}안\s?(마|먹)/, '물 안 마심'], [/물.{0,8}(많이|엄청|자주|계속|벌컥).{0,6}(마|먹)/, '물 많이 마심']];
   const symOf = s => { let r = [...new Set(SYM.filter(([re]) => re.test(s)).map(x => x[1]))]; if (r.includes('물 안 마심') && !/밥|사료|캔/.test(s)) r = r.filter(x => x !== '식욕 없음'); return r; };
   const sevOf = s => /심하|많이|계속|여러\s?번|\d\s?번|자꾸/.test(s) ? 3 : /좀|약간|살짝|조금|반쯤/.test(s) ? 1 : 2;
@@ -836,7 +1005,11 @@ function ruleParse(text) {
       time = [h, mm];
     } else if ((m = s.match(/(아침|점심|저녁|밤|새벽)/))) time = [{ 아침: 8, 점심: 12, 저녁: 19, 밤: 22, 새벽: 3 }[m[1]], 0];
     if (time) lastTime = time; else time = lastTime;
-    const base = { time: time ? pad(time[0]) + ':' + pad(time[1]) : null, dayOffset: /어제/.test(s) ? -1 : 0, src: s };
+    let dm2 = s.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/) || s.match(/(?:^|\s)(1[0-2]|0?[1-9])\/(3[01]|[12]\d|0?[1-9])(?=\s|$|에)(?!\s?(정|알|포|캔|ml|개))/);
+    if (dm2) { const y = new Date().getFullYear(); let dd = new Date(y, +dm2[1] - 1, +dm2[2]); if (dd.getTime() > Date.now() + 864e5) dd = new Date(y - 1, +dm2[1] - 1, +dm2[2]); lastDate = dkey(dd); }
+    const base = { time: time ? pad(time[0]) + ':' + pad(time[1]) : null, dayOffset: /어제/.test(s) ? -1 : /그저께|그제/.test(s) ? -2 : 0, date: dm2 ? lastDate : null, src: s };
+    const lv = labsIn(s);
+    if (Object.keys(lv).length) { out.push({ ...base, type: 'lab', values: lv, memo: s.length > 40 || /재검|병원|선생님|수의사/.test(s) ? s : null }); continue; }
     const numUnit = s.match(/(\d+(?:\.\d+)?)\s*(kg|킬로|ml|mL|cc|미리|g|그램|캔|포|정)/i);
     if ((m = s.match(/(\d+(?:\.\d+)?)\s*(kg|킬로그램|킬로|키로)\s*(\d{1,3})?/i))) { const kg = +m[1] + (m[3] ? +m[3] / (m[3].length === 3 ? 1000 : m[3].length === 2 ? 100 : 10) : 0); out.push({ ...base, type: 'weight', kg: Math.round(kg * 1000) / 1000 }); continue; }
     if (/몸무게|체중/.test(s) && (m = s.match(/(\d+(?:\.\d+)?)\s*(g|그램)/))) { out.push({ ...base, type: 'weight', kg: +m[1] / 1000 }); continue; }
@@ -899,14 +1072,15 @@ async function saveParsed() {
   const btn = document.querySelector('[data-act="p-save"]'); if (btn) btn.disabled = true;
   let n = 0;
   for (const e of P.entries) {
-    const d = { ...e, by: S.me || null }; delete d.timeGuess;
+    const d = { ...e, by: S.me || null }; delete d.timeGuess; delete d.dateOnly;
     Object.keys(d).forEach(k => d[k] === undefined && delete d[k]);
     if (await write(() => backend.addLog(d))) n++; else break;
   }
   const k = today();
   for (const id of P.taskIds) { const cid = k + '_' + id; if (!S.checks.some(c => c.id === cid)) await write(() => backend.setCheck(cid, { date: k, taskId: id, by: S.me || null, t: Date.now() })); }
-  const w = P.entries.filter(e => e.type === 'weight' && e.kg).pop();
-  if (w && S.pet) { const np = petBase(); np.weightKg = w.kg; await write(() => backend.savePet(np)); S.pet = np; C = null; }
+  const w = P.entries.filter(e => e.type === 'weight' && e.kg).sort((a, b) => a.t - b.t).pop();
+  if (w && S.logs.some(l => l.type === 'weight' && l.t > w.t)) w.kg = null;
+  if (w && w.kg && S.pet) { const np = petBase(); np.weightKg = w.kg; await write(() => backend.savePet(np)); S.pet = np; C = null; }
   if (n === P.entries.length) { S.parsed = null; S.draft = ''; toast(`${n}건 저장했어요`); }
   render(true);
 }
@@ -918,6 +1092,7 @@ document.addEventListener('click', async e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act;
   if (a === 'create') createFamily(b);
+  else if (a === 'join') { const v = ($('#join')?.value || '').trim(); const m = v.match(/[?&]g=([0-9a-f]{20,64})/i) || v.match(/^([0-9a-f]{20,64})$/i); if (!m) return toast('링크가 맞지 않아요. 가족에게 받은 링크 전체를 붙여넣어 주세요'); history.replaceState(null, '', location.pathname + '?g=' + m[1]); boot(); }
   else if (a === 'setname') { const v = (b.dataset.v || $('#nm')?.value || '').trim().slice(0, 10); if (!v) return toast('이름을 넣어주세요'); S.me = v; ls.set('aigyeot-name', v); toast(v + '(으)로 기록할게요'); render(true); }
   else if (a === 'share') { const url = shareLink(), text = `${S.pet?.name || '우리 아이'} 케어 기록을 같이 써요. 이 링크로 들어오면 돼요.`; if (navigator.share) { try { await navigator.share({ title: '아이곁', text, url }); } catch (err) {} } else { try { await navigator.clipboard.writeText(text + '\n' + url); toast('복사했어요. 카톡에 붙여넣어 주세요'); } catch (err) { toast('링크를 길게 눌러 복사해주세요'); } } }
   else if (a === 'copy-link') { try { await navigator.clipboard.writeText(shareLink()); toast('링크를 복사했어요'); } catch (err) { toast('링크를 길게 눌러 복사해주세요'); } }
@@ -929,6 +1104,10 @@ document.addEventListener('click', async e => {
   else if (a === 'p-cancel') { S.parsed = null; render(true); $('#w-text')?.focus(); }
   else if (a === 'p-save') saveParsed();
   else if (a === 'new') openSheet(b.dataset.type);
+  else if (a === 'edit') { const l = S.logs.find(x => x.id === b.dataset.id); if (l) openSheet(l.type, l); }
+  else if (a === 'logview') { S.logView = b.dataset.v; render(true); }
+  else if (a === 'install') { if (S.installEvt) { S.installEvt.prompt(); try { await S.installEvt.userChoice; } catch (err) {} S.installEvt = null; render(true); } }
+  else if (a === 'install-hide') { ls.set('aigyeot-install-hide', '1'); render(true); }
   else if (a === 'close') closeSheet();
   else if (a === 'save-log') saveLog();
   else if (a === 'tab' || a === 'go-set') { S.tab = a === 'go-set' ? 'set' : b.dataset.to; renderTabs(); render(true); window.scrollTo(0, 0); }
