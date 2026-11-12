@@ -192,11 +192,11 @@ async function rpc(fn, body) {
 }
 function sbBackend(code) {
   const L = { pet: [], logs: [], checks: [] };
-  let st = { pet: null, logs: [], checks: [] }, stamp = null, loading = false;
+  let st = { pet: null, logs: [], checks: [] }, stamp = null, loading = false, again = false;
   try { const c = JSON.parse(ls.get('aigyeot-cache-' + code)); if (c) st = c; } catch (e) {}
   const emit = () => { L.pet.forEach(f => f(st.pet, { fromCache: false })); L.logs.forEach(f => f(st.logs)); L.checks.forEach(f => f(st.checks)); };
   async function load() {
-    if (loading) return; loading = true;
+    if (loading) { again = true; return; } loading = true; again = false;
     try {
       const r = await rpc('ag_get', { p_code: code });
       st = { pet: r.pet || null, logs: r.logs || [], checks: r.checks || [] }; stamp = r.stamp;
@@ -206,7 +206,7 @@ function sbBackend(code) {
     } catch (e) {
       if (e.code === 'no_family') { setMode('nofamily-bad'); render(true); }
       else { S.slow = true; renderBanner(); }
-    } finally { loading = false; }
+    } finally { loading = false; if (again) load(); }
   }
   async function poll() {
     if (document.hidden) return;
@@ -854,8 +854,12 @@ function ruleParse(text) {
     if ((known || /약|투약|알약|시럽|복용|정\b|\d\/\d\s*정|반\s?(알|정)|안약|연고/.test(s)) && !/강급|사료|캔|츄르/.test(s)) {
       const dm = s.match(/(\d+\/\d+|\d+(?:\.\d+)?)\s*(정|알|ml|cc|방울|포)/i), half = s.match(/반\s?(알|정|포)/);
       const dose = dm ? dm[0].replace(/\s+/g, '') : half ? '1/2' + half[1] : null;
-      const name = known || (s.match(/([가-힣A-Za-z]+)\s*(?:\d|약|을|를|투약|먹)/) || [])[1] || '약';
-      out.push({ ...base, type: 'med', name: /^(약|아침|저녁|오전|오후|밤)$/.test(name) ? '약' : name, dose }); continue;
+      const toks = s.replace(/(오전|오후|아침|점심|저녁|밤|새벽)?\s*\d{1,2}\s*시(\s*\d{1,2}\s*분|\s*반)?(에|쯤)?|\d{1,2}:\d{2}/g, ' ')
+        .replace(/(\d+\/\d+|\d+(?:\.\d+)?)\s*(정|알|ml|cc|방울|포)/gi, ' ').split(/[\s,]+/)
+        .map(t => t.replace(/(을|를|이|가|은|는|도|에|으로|로|랑|하고)$/, ''))
+        .filter(t => t && !/\d/.test(t) && !/^(반|약$|투약|먹|줬|줌|주|복용|아침|점심|저녁|밤|새벽|오전|오후|에|시|쯤|그리고|했|함|하|그|오늘|어제|알약|시럽|안약|연고|바름|발라|넣)/.test(t));
+      const name = known || toks[0] || (/안약/.test(s) ? '안약' : /연고/.test(s) ? '연고' : '약');
+      out.push({ ...base, type: 'med', name, dose }); continue;
     }
     if (/먹|급여|강급|캔|사료|밥|그램|\dg\b|주사기|튜브|파우치|츄르/.test(s) && (!/안\s?먹/.test(s) || /강급|주사기|튜브|\d\s*(g|그램|ml|캔|포)/.test(s))) {
       const f = foods.find(x => s.includes(x.name)) || foods[0];
