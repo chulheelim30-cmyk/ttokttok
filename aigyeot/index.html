@@ -242,7 +242,7 @@ function sbBackend(code) {
       if (S.slow) { S.slow = false; renderBanner(); }
       emit();
     } catch (e) {
-      if (e.code === 'no_family') { setMode('nofamily-bad'); render(true); }
+      if (e.code === 'no_family') { if (ls.get('aigyeot-code') === code) ls.set('aigyeot-code', ''); setMode('nofamily-bad'); render(true); }
       else { S.slow = true; renderBanner(); }
     } finally { loading = false; if (again) load(); }
   }
@@ -384,7 +384,7 @@ if ('serviceWorker' in navigator) window.addEventListener('load', () => { naviga
 /* ----- landing ----- */
 function vLanding() {
   return `<div class="card" style="padding:22px 18px">
-    ${S.mode === 'nofamily-bad' ? '<div class="banner">링크가 맞지 않거나 지워진 기록이에요. 가족에게 받은 링크를 다시 확인해주세요.</div>' : ''}
+    ${S.mode === 'nofamily-bad' ? '<div class="banner">이 링크로는 열 수 없어요. 가족이 링크를 새로 바꿨을 수 있어요. 가족에게 새 링크를 받아 열거나 아래에 붙여넣어 주세요.</div>' : ''}
     <div style="font-size:40px;line-height:1">🐾</div>
     <h2 style="margin:10px 0 6px;font-size:21px">아픈 아이, 가족이 함께 돌봐요</h2>
     <p class="muted" style="margin:0 0 4px">급여량 계산, 투약·수액·증상 기록, 병원에 보여줄 요약까지 한곳에서.</p>
@@ -791,11 +791,13 @@ function vSet() {
     ${tasks.length ? '' : `<button class="btn ghost sm" data-act="task-default" style="margin-top:8px">자주 쓰는 할 일 한 번에 넣기</button>`}</div>
 
   ${isStandalone() ? '' : `<div class="card"><h3>홈 화면에 앱으로 두기</h3>${installHow()}${isIOS ? '<p class="muted" style="margin:8px 0 0">아이폰은 홈 화면 앱이 처음 열릴 때 가족 링크를 한 번 붙여넣어야 할 수 있어요. 아래 링크를 미리 복사해 두세요.</p>' : ''}</div>`}
+  ${(() => { try { return sessionStorage.getItem('aigyeot-rotated'); } catch (e) { return null; } })() ? '<div class="note" style="margin-bottom:12px"><b>새 링크로 바꿨어요.</b> 옛 링크는 이제 열리지 않아요. 아래 버튼으로 가족에게 새 링크를 다시 보내주세요.</div>' : ''}
   <div class="card"><h3>가족과 같이 쓰기</h3>
     <p class="muted" style="margin:0 0 8px">이 링크를 가족에게 보내면, 가입 없이 바로 같은 기록을 보고 남길 수 있어요.</p>
     <input type="text" readonly value="${esc(shareLink())}" onclick="this.select()" style="font-size:13px">
     <div class="two" style="margin-top:8px"><button class="btn" data-act="share">카톡·문자로 보내기</button><button class="btn ghost" data-act="copy-link">링크 복사</button></div>
     <p class="muted" style="margin:10px 0 0">링크를 아는 사람은 누구나 기록을 보고 쓸 수 있으니, 가족에게만 보내주세요.</p>
+    ${S.rotArm ? `<div class="alertbox" style="margin-top:10px"><b>링크를 새로 바꿀까요?</b>옛 링크는 바로 막혀요. 기록은 그대로 옮겨가고, 가족에게는 새 링크를 다시 보내야 해요.<div class="two" style="margin-top:10px"><button class="btn ghost sm" data-act="rotate-no">그만두기</button><button class="btn sm" style="background:var(--warn)" data-act="rotate-yes">새 링크로 바꾸기</button></div></div>` : `<button class="btn ghost sm" data-act="rotate" style="margin-top:8px">링크가 다른 사람에게 갔나요? 새 링크로 바꾸기</button>`}
     <label class="f">내 이름 (기록에 함께 남아요)</label>
     <div class="row"><input type="text" id="nm" value="${esc(S.me || '')}" placeholder="예: 엄마"><button class="btn ghost sm" data-act="setname" style="white-space:nowrap">저장</button></div></div>`;
 }
@@ -1092,6 +1094,18 @@ document.addEventListener('click', async e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act;
   if (a === 'create') createFamily(b);
+  else if (a === 'rotate') { S.rotArm = true; render(true); }
+  else if (a === 'rotate-no') { S.rotArm = false; render(true); }
+  else if (a === 'rotate-yes') {
+    if (S.pending) return toast('보관 중인 기록을 먼저 보낸 뒤에 바꿀 수 있어요. 인터넷 연결을 확인해주세요');
+    b.disabled = true; b.textContent = '바꾸는 중…';
+    try {
+      const old = familyCode(), nc = await rpc('ag_rotate', { p_code: old });
+      ls.set('aigyeot-code', nc); ls.set('aigyeot-cache-' + old, ''); ls.set('aigyeot-q-' + old, '');
+      try { sessionStorage.setItem('aigyeot-rotated', '1'); } catch (err) {}
+      location.replace(location.pathname + '?g=' + nc + '#set');
+    } catch (err) { toast('바꾸지 못했어요. 인터넷 연결을 확인해주세요'); S.rotArm = false; render(true); }
+  }
   else if (a === 'join') { const v = ($('#join')?.value || '').trim(); const m = v.match(/[?&]g=([0-9a-f]{20,64})/i) || v.match(/^([0-9a-f]{20,64})$/i); if (!m) return toast('링크가 맞지 않아요. 가족에게 받은 링크 전체를 붙여넣어 주세요'); history.replaceState(null, '', location.pathname + '?g=' + m[1]); boot(); }
   else if (a === 'setname') { const v = (b.dataset.v || $('#nm')?.value || '').trim().slice(0, 10); if (!v) return toast('이름을 넣어주세요'); S.me = v; ls.set('aigyeot-name', v); toast(v + '(으)로 기록할게요'); render(true); }
   else if (a === 'share') { const url = shareLink(), text = `${S.pet?.name || '우리 아이'} 케어 기록을 같이 써요. 이 링크로 들어오면 돼요.`; if (navigator.share) { try { await navigator.share({ title: '아이곁', text, url }); } catch (err) {} } else { try { await navigator.clipboard.writeText(text + '\n' + url); toast('복사했어요. 카톡에 붙여넣어 주세요'); } catch (err) { toast('링크를 길게 눌러 복사해주세요'); } } }
