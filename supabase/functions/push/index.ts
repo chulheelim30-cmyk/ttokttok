@@ -28,9 +28,52 @@ async function config() {
 
 type Msg = { user_id: string; title: string; body: string; tag: string; url: string };
 
+// 영어 사용자(user_lang.lang='en')에게는 알림 문구를 영어로 바꿔요. 긴 문구부터 바꿔요. (11/16)
+const EN: [string, string][] = ([
+  ["★ 우리 그림 완성 + 황금 칸 당첨!", "★ Painting complete + golden piece won!"],
+  ["🎉 우리 그림의 모든 칸이 열렸어요", "🎉 Every piece of our painting is open"],
+  ["🧩 마지막 한 조각만 남았어요!", "🧩 Just one piece left!"],
+  ["1초면 돼요. 오늘의 안부를 또옥 두드려 주세요.", "It takes one second. Tap today's knock."],
+  ["내 노크로 마지막 칸을 열어 그림이 완성됐어요. 앱에서 기프티콘을 받아 주세요.", "Your knock finished the painting! Claim your gift card in the app."],
+  ["노크는 했어요. 토닥토닥 💗 해 주거나 전화 한 통 어때요?", "They knocked. How about a pat 💗 or a quick call?"],
+  ["누구든 한 번만 더 노크하면 우리 그림이 완성돼요. 가족에게 콕 찔러 볼까요?", "One more knock from anyone finishes our painting. Nudge your family?"],
+  ["님이 마지막 황금 칸을 열었어요. 완성된 그림을 확인해 보세요!", " opened the last golden piece. Come see the finished painting!"],
+  ["님이 콕 찔렀어요. 오늘 안부를 또옥 두드려 주세요.", " nudged you. Tap today's knock."],
+  ["님이 토닥토닥 해 줬어요. 오늘은 조금 쉬어 가요.", " sent you a pat 💗 Take it easy today."],
+  ["님 오늘 컨디션이 안 좋대요", " isn't feeling great today"],
+  ["님 이번 주 컨디션", "'s week"],
+  ["님 소식이 없어요", " hasn't checked in"],
+  ["시간 동안 노크가 없었어요. 괜찮다면 한 번만 두드려 주세요. 3시간 뒤에도 소식이 없으면 노크방에 알려요.", " hours without a knock. If you're okay, just tap once. If we don't hear from you in 3 hours, we'll let your room know."],
+  ["시간째 노크도, 앱 확인도 없어요. 전화나 메시지로 안부를 확인해 보세요.", " hours with no knock and no app visit. Try a call or message to check in."],
+  ["일 있었어요. 토닥토닥, 잘 버텼어요. 다음 주는 조금 더 가볍길.", ". Pat pat, you made it through. Hope next week is lighter."],
+  ["일 있었어요. 주말에 안부 전화 한 통 어때요?", ". How about a call this weekend?"],
+  ["일. 다음 주도 하루 1초 안부 함께해요.", ". One second a day again next week."],
+  ["일이었어요. 다음 주도 또옥!", ". Keep knocking next week!"],
+  ["컨디션이 안 좋은 날이 ", "Hard days: "],
+  ["‘좋음’인 날이 ", "Good days: "],
+  ["일 · 안 좋은 날 ", " · hard days "],
+  ["일 · 그냥 ", " · okay "],
+  ["좋은 날 ", "Good days "],
+  ["지금 노크하면 내 손으로 우리 그림을 완성할 수 있어요.", "Knock now to finish our painting yourself."],
+  ["이번 주 컨디션 좋았네요!", "Great week!"],
+  ["이번 주 힘든 날이 많았죠", "A lot of hard days this week"],
+  ["이번 주도 수고했어요", "Well done this week"],
+  ["오늘 또옥 했어요?", "Did you knock today?"],
+  ["토닥토닥 💗", "Pat pat 💗"],
+  ["괜찮아요?", "Are you okay?"],
+  ["가까운 사람", "Someone close"],
+  ["콕!", "Nudge!"],
+  ["알림이 잘 와요. 이제 가까운 사람의 노크가 멈추면 이렇게 알려 드려요.", "Notifications work! If someone close stops knocking, we'll let you know like this."],
+  ["또옥!", "Knock!"],
+] as [string, string][]).sort((a, b) => b[0].length - a[0].length);
+const toEn = (s: string) => EN.reduce((t, [k, e]) => t.split(k).join(e), s || "");
+
 async function sendTo(msgs: Msg[]) {
   if (!msgs.length) return { sent: 0, gone: 0, failed: 0 };
   const ids = [...new Set(msgs.map((m) => m.user_id))];
+  const { data: langs } = await db.from("user_lang").select("user_id").in("user_id", ids).eq("lang", "en");
+  const en = new Set((langs || []).map((x: { user_id: string }) => x.user_id));
+  if (en.size) msgs = msgs.map((m) => en.has(m.user_id) ? { ...m, title: toEn(m.title), body: toEn(m.body) } : m);
   const { data: subs, error } = await db.from("push_subs").select("endpoint,user_id,p256dh,auth").in("user_id", ids);
   if (error) throw error;
   let sent = 0, gone = 0, failed = 0;
