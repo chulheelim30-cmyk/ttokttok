@@ -28,6 +28,7 @@
 <script src="./mood.js?v=10" defer></script><script src="./ptr.js?v=4" defer></script>
 <script src="./rooms.js?v=33" defer></script>
 <script src="./account.js?v=1" defer></script>
+<script src="./qrlib.js?v=1" defer></script><script src="./qr.js?v=1" defer></script>
 <script src="./anim.js?v=10" defer></script>
 <script src="./easy.js?v=1" defer></script><script src="./puzzle.js?v=5" defer></script>
 <style>
@@ -195,6 +196,7 @@ html,body{background:#ece6da;color:var(--ink)}
 <div class="bar"><i id="groupBar" style="width:0;background:var(--gold)"></i></div><div class="t3" style="margin-top:6px" id="groupTxt"></div></div>
 <div class="card" style="text-align:center"><div class="t2">가까운 사람 초대</div><div class="code" id="inviteCode">------</div>
 <button class="btn bp" onclick="shareInvite()">초대 링크 보내기</button>
+<button class="btn bs" style="margin-top:8px" onclick="showInviteQR()">QR 코드로 초대하기</button>
 <button class="btn bs" style="margin-top:8px" onclick="openInvitePhone()">전화번호로 초대하기</button>
 <div class="t3" style="margin-top:8px">링크를 받은 사람이 누르면 바로 이 노크방에 들어와요 · 공개 피드 없음 · 최대 30명</div></div>
 </section>
