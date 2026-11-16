@@ -36,7 +36,7 @@
 - 주요 RPC: do_knock, knock_all, create_room_v2, join_room, accept_invite, update_room_settings, set_mood, send_pat, my_pats, my_pats_sent, touch_seen, save/remove_push_sub, set_real_name, my_real_name, room_real_names, room_golden, am_operator, _push_claim(서버 전용), _ops_daily_stats_v2(아침 리포트), _lonely_rooms.
 - 그림 진행: `rooms.pic_count`(노크 들어올 때만 +1, 줄지 않음) → RPC `room_pic_count`. knocks 줄 수로 세지 말 것(나가기·내보내기에서 지워짐).
 - 트리거: members_before_insert(인원 한도·크루 72시간), _golden_after_knock(황금 칸 그림당 1칸).
-- 엣지 함수: `push`(cron 1분마다 tick: 알림 발송 + 10분마다 혼자 24시간 방 정리, test, key), `account`(탈퇴). 둘 다 verify_jwt=false, 자체 인증.
+- 엣지 함수: `push`(cron 1분마다 tick: 알림 발송 + 영어 사용자는 EN 사전으로 번역(user_lang) + 등록 만료(gone)로 못 보낸 알림은 표 push_retry에 두었다가 6시간 안에 재발송(11/16) + 10분마다 혼자 24시간 방 정리, test, key), `account`(탈퇴). 둘 다 verify_jwt=false, 자체 인증.
 - cron: `ttok-push-tick` (pg_cron + pg_net, 매분).
 - 알림 규칙(_push_claim): 기준시간 지나면 본인 '괜찮아요?' → 3시간 뒤 노크방 / 앱 열면 무사 / 밤 22~8시엔 콕만 / 컨디션 안 좋음(3·5) / 토닥토닥 / 마지막 한 조각(pic_count%30=29, 방 모두·데모방 포함, push_log kind=last1 그림마다 1번) / 황금 칸 / 일요일 19시 주간 컨디션 / 저녁 8시 리마인드.
 

@@ -69,7 +69,7 @@ const EN: [string, string][] = ([
 const toEn = (s: string) => EN.reduce((t, [k, e]) => t.split(k).join(e), s || "");
 
 async function sendTo(msgs: Msg[]) {
-  if (!msgs.length) return { sent: 0, gone: 0, failed: 0 };
+  if (!msgs.length) return { sent: 0, gone: 0, failed: 0, ok: [] as boolean[], lost: [] as boolean[] };
   const ids = [...new Set(msgs.map((m) => m.user_id))];
   const { data: langs } = await db.from("user_lang").select("user_id").in("user_id", ids).eq("lang", "en");
   const en = new Set((langs || []).map((x: { user_id: string }) => x.user_id));
@@ -77,8 +77,9 @@ async function sendTo(msgs: Msg[]) {
   const { data: subs, error } = await db.from("push_subs").select("endpoint,user_id,p256dh,auth").in("user_id", ids);
   if (error) throw error;
   let sent = 0, gone = 0, failed = 0;
+  const ok = msgs.map(() => false), lost = msgs.map(() => false);
   const jobs: Promise<void>[] = [];
-  for (const m of msgs) {
+  msgs.forEach((m, i) => {
     for (const s of (subs || []).filter((x) => x.user_id === m.user_id)) {
       jobs.push(
         webpush
@@ -89,11 +90,13 @@ async function sendTo(msgs: Msg[]) {
           )
           .then(async () => {
             sent++;
+            ok[i] = true;
             await db.from("push_subs").update({ last_ok_at: new Date().toISOString() }).eq("endpoint", s.endpoint);
           })
           .catch(async (e: { statusCode?: number; body?: string }) => {
             if (e && (e.statusCode === 404 || e.statusCode === 410)) {
               gone++;
+              lost[i] = true;
               await db.from("push_subs").delete().eq("endpoint", s.endpoint);
             } else {
               failed++;
@@ -102,9 +105,9 @@ async function sendTo(msgs: Msg[]) {
           }),
       );
     }
-  }
+  });
   await Promise.all(jobs);
-  return { sent, gone, failed };
+  return { sent, gone, failed, ok, lost };
 }
 
 Deno.serve(async (req) => {
@@ -117,10 +120,23 @@ Deno.serve(async (req) => {
       if (req.headers.get("x-cron-secret") !== c.cron_secret) return json({ error: "forbidden" }, 403);
       const { data, error } = await db.rpc("_push_claim");
       if (error) throw error;
-      const r = await sendTo((data || []) as Msg[]);
+      // 등록이 만료돼(gone) 못 보낸 알림은 push_retry에 두었다가, 새로 등록되면 6시간 안에 다시 보내요 (11/16)
+      const claimed = (data || []) as Msg[];
+      const since = new Date(Date.now() - 6 * 3600e3).toISOString();
+      const { data: rq } = await db.from("push_retry").select("id,user_id,title,body,tag,url").gt("created_at", since).limit(50);
+      const retry = (rq || []) as (Msg & { id: number })[];
+      const r = await sendTo([...claimed, ...retry.map(({ id: _id, ...m }) => m)]);
+      const lostNew = claimed.filter((_, i) => r.lost[i] && !r.ok[i]);
+      if (lostNew.length) {
+        const { error: qErr } = await db.from("push_retry").insert(lostNew.map(({ user_id, title, body, tag, url }) => ({ user_id, title, body, tag, url })));
+        if (qErr) console.error("retry queue", qErr.message);
+      }
+      const done = retry.filter((_, j) => r.ok[claimed.length + j]).map((x) => x.id);
+      if (done.length) await db.from("push_retry").delete().in("id", done);
       // 10분마다: 혼자인 채로 24시간 지난 노크방 정리 (구성원·노크 기록은 함께 지워져요)
       let cleaned = 0;
       if (new Date().getUTCMinutes() % 10 === 0) {
+        await db.from("push_retry").delete().lt("created_at", since);
         const { data: lonely } = await db.rpc("_lonely_rooms");
         const ids = (lonely || []).map((x: { id: string }) => x.id);
         if (ids.length) {
@@ -128,7 +144,7 @@ Deno.serve(async (req) => {
           if (delErr) console.error("lonely cleanup", delErr.message); else cleaned = ids.length;
         }
       }
-      return json({ ok: true, picked: (data || []).length, cleaned, ...r });
+      return json({ ok: true, picked: claimed.length, retried: done.length, queued: lostNew.length, cleaned, sent: r.sent, gone: r.gone, failed: r.failed });
     }
     if (body.action === "test") {
       const jwt = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
@@ -141,7 +157,7 @@ Deno.serve(async (req) => {
         tag: "test",
         url: "./",
       }]);
-      return json({ ok: true, ...r });
+      return json({ ok: true, sent: r.sent, gone: r.gone, failed: r.failed });
     }
     if (body.action === "key") return json({ key: c.vapid_public });
     return json({ error: "unknown action" }, 400);
