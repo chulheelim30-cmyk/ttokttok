@@ -17,7 +17,7 @@
     var cen = W.c.filter(function (x) { return x[3].indexOf(age) >= 0; });
     var item = function (t, sub, extra) { return '<div style="padding:12px 0;border-top:1px solid #eee6d8"><div style="font-weight:700;font-size:15px">' + esc(t) + '</div><div style="font-size:13px;opacity:.75;margin-top:2px">' + sub + '</div>' + (extra || '') + '</div>'; };
     o.firstChild.innerHTML =
-      '<div style="font-weight:800;font-size:18px">도움이 필요할 때</div>' +
+      '<div style="font-weight:800;font-size:18px">복지 정보</div>' +
       '<div style="font-size:13px;opacity:.75;margin-top:4px">나이대와 사는 곳에 맞는 제도와 전화할 곳이에요</div>' +
       '<div style="display:flex;gap:8px;margin-top:12px">' + sel('hAge', ['청년', '중장년', '노년'], age) + sel('hSido', sidos, sido, '사는 곳(시·도)') + '</div>' +
       (sggs.length ? '<div style="display:flex;gap:8px;margin-top:8px">' + sel('hSgg', sggs, sgg, '시·군·구 (동네 복지관 찾기)') + '</div>' : '') +
